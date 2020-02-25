@@ -1,0 +1,10 @@
+{
+  "data": {
+    "train_data": "./data/ctb60/train.ctb60.charconll.r",
+    "dev_data": "./data/ctb60/dev.ctb60.charconll.r",
+    "test_data": "./data/ctb60/test.ctb60.charconll.r"
+  },
+  "pretrained": {
+    "char_embedding": "./data/giga.100.txt"
+  }
+}

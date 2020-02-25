@@ -1,0 +1,11 @@
+{
+  "data": {
+    "train_data": "./data/ctb50/train.ctb50.charconll.r",
+    "dev_data": "./data/ctb50/dev.ctb50.charconll.r",
+    "test_data": "./data/ctb50/test.ctb50.charconll.r"
+  },
+  "pretrained": {
+    "bert_model": "./bert/base",
+    "bert_vocab": "./bert/base/vocab.txt"
+  }
+}
