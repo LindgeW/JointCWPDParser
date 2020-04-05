@@ -34,8 +34,26 @@ def independent_dropout(x, y, p=0.5, eps=1e-12):
     scale = 3. / (2 * x_mask + y_mask + eps)
     x_mask *= scale
     y_mask *= scale
-    x *= x_mask.unsqueeze(dim=-1)
-    y *= y_mask.unsqueeze(dim=-1)
+    x = x * x_mask.unsqueeze(dim=-1)
+    y = y * y_mask.unsqueeze(dim=-1)
+    return x, y
+
+
+def independent_dropout_bi(x, y, p=0.5, eps=1e-12):
+    '''
+    :param x: (bz, time_step, feature_size)
+    :param y: (bz, time_step, feature_size)
+    :param p:
+    :param eps:
+    :return:
+    '''
+    x_mask = torch.bernoulli(x.data.new_full(x.shape[:2], 1 - p))
+    y_mask = torch.bernoulli(y.data.new_full(y.shape[:2], 1 - p))
+    scale = 2. / (x_mask + y_mask + eps)
+    x_mask *= scale
+    y_mask *= scale
+    x = x * x_mask.unsqueeze(dim=-1)
+    y = y * y_mask.unsqueeze(dim=-1)
     return x, y
 
 

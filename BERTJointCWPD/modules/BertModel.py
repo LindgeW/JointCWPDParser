@@ -30,9 +30,10 @@ class BertEmbedding(nn.Module):
             self.bert.eval()
 
         with torch.no_grad():
-            # _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
-            _, _, all_enc_outs = self.bert(bert_ids)
+            _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
+            # _, _, all_enc_outs = self.bert(bert_ids)
             all_enc_outs = all_enc_outs[-self.nb_layers:]
+
         bert_out = self.scale(all_enc_outs)  # (bz, seq_len, 768)
         # 根据bert piece长度切分
         bert_chunks = bert_out[bert_mask].split(bert_lens[mask].tolist())

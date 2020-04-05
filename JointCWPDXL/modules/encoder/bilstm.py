@@ -1,7 +1,7 @@
 from .rnn_encoder import RNNEncoder
 import torch
 import torch.nn as nn
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 
 # class BiLSTMEncoder(nn.Module):
 #     def __init__(self, args):
@@ -28,16 +28,54 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 #         return lstm_out
 
 
+class GRU(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, dropout=0.,
+                 batch_first=True, bidirectional=False):
+        super(GRU, self).__init__()
+
+        self.gru = nn.GRU(input_size=input_size,
+                          hidden_size=hidden_size,
+                          num_layers=num_layers,
+                          dropout=dropout,
+                          batch_first=batch_first,
+                          bidirectional=bidirectional)
+
+    def forward(self, x, seq_lens=None, hx=None):
+        '''
+        :param x: (bz, seq_len, embed_dim)
+        :param seq_lens: (bz, seq_len)
+        :param hx: 初始隐层
+        :return:
+        '''
+
+        if seq_lens is not None and not isinstance(x, PackedSequence):
+            sort_lens, sort_idxs = torch.sort(seq_lens, dim=0, descending=True)
+            pack_embed = pack_padded_sequence(x[sort_idxs], lengths=sort_lens, batch_first=True)
+            pack_enc_out, hx = self.gru(pack_embed, hx)
+            enc_out, _ = pad_packed_sequence(pack_enc_out, batch_first=True)
+            _, unsort_idxs = torch.sort(sort_idxs, dim=0, descending=False)
+            enc_out = enc_out[unsort_idxs]
+        else:
+            enc_out, hx = self.gru(x, hx)
+
+        return enc_out, hx
+
+
 class BiLSTMEncoder(nn.Module):
-    def __init__(self, args):
+    def __init__(self, input_size,
+                 hidden_size,
+                 num_layers=1,
+                 dropout=0.2,
+                 bidirectional=True,
+                 batch_first=True):
         super(BiLSTMEncoder, self).__init__()
 
-        self.bilstm = nn.LSTM(input_size=3 * args.embed_size,
-                              hidden_size=args.hidden_size // 2,
-                              num_layers=args.lstm_depth,
-                              dropout=args.lstm_drop,
-                              batch_first=True,
-                              bidirectional=True)
+        self.bilstm = nn.LSTM(input_size=input_size,
+                              hidden_size=hidden_size,
+                              num_layers=num_layers,
+                              dropout=dropout,
+                              batch_first=batch_first,
+                              bidirectional=bidirectional)
 
     def forward(self, embed_inputs, non_pad_mask=None):
         '''

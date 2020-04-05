@@ -37,11 +37,6 @@ def _check_build_bert_vocab(func):
 
 
 class DepVocab(object):
-    '''
-        词表
-        词性表
-        依存关系表
-    '''
     def __init__(self, bert_vocab_path=None,
                  tag_counter: Counter = None,
                  rel_counter: Counter = None,
@@ -105,13 +100,17 @@ class DepVocab(object):
 
         bert_ids, bert_lens = [], []
         tokenizer = self.bert_tokenizer
+
         cls_tokens = [self.key_words['cls']] + tokens
         bert_piece_ids = map(transform, cls_tokens)
         for piece in bert_piece_ids:
+            if not piece:
+                piece = [0]
             bert_ids.extend(piece)
             bert_lens.append(len(piece))
 
-        return bert_ids, bert_lens
+        bert_mask = [1] * len(bert_ids)
+        return bert_ids, bert_lens, bert_mask
 
     # @_check_build_bert_vocab
     # def bert_ids(self, seqs):

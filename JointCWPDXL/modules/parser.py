@@ -103,15 +103,14 @@ class JointDParser(object):
         logger.info(self.parser_model)
 
     # 训练一次
-    def train_iter(self, train_data, args, vocab, optimizer):
+    def train_iter(self, train_data, args, optimizer, *vocab):
         self.parser_model.train()
         train_loss = 0
         all_arc_acc, all_rel_acc, all_arcs = 0, 0, 0
         start_time = time.time()
-        batch_chunk_size = args.batch_size // args.update_steps
         # lmbd = 1e-4
-        for i, batch_data in enumerate(batch_iter(train_data, batch_chunk_size, True)):
-            batcher = batch_variable(batch_data, vocab, args.device)
+        for i, batch_data in enumerate(batch_iter(train_data, args.batch_size, True)):
+            batcher = batch_variable(batch_data, *vocab, args.device)
             # batcher = (x.to(args.device) for x in batcher)
             ngram_idxs, extngram_idxs, true_tags, true_heads, true_rels, non_pad_mask = batcher
 
@@ -122,14 +121,14 @@ class JointDParser(object):
             #     reg_loss = reg_loss + 0.5 * param.norm(2) ** 2
 
             tag_loss = self.calc_tag_loss(tag_score, true_tags, non_pad_mask)
-            arc_loss, rel_loss = self.calc_dep_loss(arc_score, rel_score, true_heads, true_rels, non_pad_mask)
-            loss = tag_loss + arc_loss + rel_loss
-
+            # tag_loss = self.parser_model.tag_loss(tag_score, true_tags, non_pad_mask)
+            dep_loss = self.calc_dep_loss(arc_score, rel_score, true_heads, true_rels, non_pad_mask)
+            loss = tag_loss + dep_loss
             if args.update_steps > 1:
                 loss = loss / args.update_steps
             loss_val = loss.float().item()
             train_loss += loss_val
-            loss.backward()  # 反向传播，计算当前梯度
+            loss.backward()
 
             arc_acc, rel_acc, nb_arcs = self.calc_acc(arc_score, rel_score, true_heads, true_rels, non_pad_mask)
             all_arc_acc += arc_acc
@@ -140,7 +139,7 @@ class JointDParser(object):
 
             # 多次循环，梯度累积，相对于变相增大batch_size，节省存储
             if (i+1) % args.update_steps == 0 or (i == args.max_step-1):
-                nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=1.)
+                nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=args.grad_clip)
                 optimizer.step()  # 利用梯度更新网络参数
                 self.parser_model.zero_grad()  # 清空过往梯度
 
@@ -154,25 +153,24 @@ class JointDParser(object):
         return train_loss, ARC, REL
 
     # 训练多次
-    def train(self, train_data, dev_data, test_data, args, vocab):
-        args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // args.batch_size)
+    def train(self, train_data, dev_data, test_data, args, *vocab):
+        args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size * args.update_steps))
         # args.warmup_step = args.max_step // 2
         print('max step:', args.max_step)
         optimizer = Optimizer(filter(lambda p: p.requires_grad, self.parser_model.parameters()), args)
-
         best_udep_f1 = 0
         test_best_uas, test_best_las = 0, 0
         test_best_tag_f1, test_best_seg_f1, test_best_udep_f1, test_best_ldep_f1 = 0, 0, 0, 0
         for ep in range(1, 1+args.epoch):
-            train_loss, arc, rel = self.train_iter(train_data, args, vocab, optimizer)
-            dev_uas, dev_las, tag_f1, seg_f1, udep_f1, ldep_f1 = self.evaluate(dev_data, args, vocab)
+            train_loss, arc, rel = self.train_iter(train_data, args, optimizer, *vocab)
+            dev_uas, dev_las, tag_f1, seg_f1, udep_f1, ldep_f1 = self.evaluate(dev_data, args, *vocab)
             logger.info('[Epoch %d] train loss: %.3f, lr: %f, ARC: %.2f%%, REL: %.2f%%' % (ep, train_loss, optimizer.get_lr(), arc, rel))
             logger.info('Dev data -- UAS: %.2f%%, LAS: %.2f%%, best_UAS: %.2f%%' % (dev_uas, dev_las, best_udep_f1))
             logger.info('Dev data -- TAG: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (tag_f1, seg_f1, udep_f1, ldep_f1))
 
             if udep_f1 > best_udep_f1:
                 best_udep_f1 = udep_f1
-                test_uas, test_las, test_tag_f1, test_seg_f1, test_udep_f1, test_ldep_f1 = self.evaluate(test_data, args, vocab)
+                test_uas, test_las, test_tag_f1, test_seg_f1, test_udep_f1, test_ldep_f1 = self.evaluate(test_data, args, *vocab)
                 if test_best_uas < test_uas:
                     test_best_uas = test_uas
                 if test_best_las < test_las:
@@ -188,38 +186,40 @@ class JointDParser(object):
 
                 logger.info('Test data -- UAS: %.2f%%, LAS: %.2f%%' % (test_uas, test_las))
                 logger.info('Test data -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (test_tag_f1, test_seg_f1, test_udep_f1, test_ldep_f1))
+                print('tag scale: ', self.parser_model.scale_tag.get_params())
+                print('dep scale: ', self.parser_model.scale_dep.get_params())
 
         logger.info('Final test performance -- UAS: %.2f%%, LAS: %.2f%%' % (test_best_uas, test_best_las))
         logger.info('Final test performance -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (test_best_tag_f1, test_best_seg_f1, test_best_udep_f1, test_best_ldep_f1))
 
-    def evaluate(self, test_data, args, vocab):
+    def evaluate(self, test_data, args, *vocab):
         self.parser_model.eval()
-
+        char_vocab, bichar_vocab = vocab
         all_gold_seg, all_pred_seg, all_seg_correct = 0, 0, 0
         all_gold_tag, all_pred_tag, all_tag_correct = 0, 0, 0
         all_gold_arc, all_pred_arc, all_arc_correct, all_rel_correct = 0, 0, 0, 0
 
         with torch.no_grad():
-            for batch_data in batch_iter(test_data, args.test_batch_size, vocab):
-                batcher = batch_variable(batch_data, vocab, args.device)
+            for batch_data in batch_iter(test_data, args.test_batch_size):
+                batcher = batch_variable(batch_data, *vocab, args.device)
                 # batcher = (x.to(args.device) for x in batcher)
                 ngram_idxs, extngram_idxs, true_tags, true_heads, true_rels, non_pad_mask = batcher
 
                 tag_score, arc_score, rel_score = self.parser_model(ngram_idxs, extngram_idxs, non_pad_mask)
-
-                pred_tags = self.parser_model.tag_decode(tag_score, non_pad_mask)
+                pred_tags = tag_score.data.argmax(dim=-1)
+                # pred_tags = self.parser_model.tag_decode(tag_score, non_pad_mask)
                 # 多GPU训练
                 # pred_tags = self.parser_model.module.tag_decode(tag_score, non_pad_mask)
                 pred_heads, pred_rels = self.decode(arc_score, rel_score, non_pad_mask)
-                for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, vocab)):
-                    gold_seg_lst, pred_seg_lst = cws_from_dep(batch_data[i]), cws_from_dep(sent_dep_tree)
+                for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, char_vocab)):
+                    gold_seg_lst, pred_seg_lst = cws_from_tag(batch_data[i]), cws_from_tag(sent_dep_tree)
+
                     num_gold_seg, num_pred_seg, num_seg_correct = calc_seg_f1(gold_seg_lst, pred_seg_lst)
                     all_gold_seg += num_gold_seg
                     all_pred_seg += num_pred_seg
                     all_seg_correct += num_seg_correct
 
-                    gold_tag_lst, pred_tag_lst = cws_from_postag(batch_data[i]), cws_from_postag(sent_dep_tree)
-                    num_gold_tag, num_pred_tag, num_tag_correct = pos_tag_f1(gold_tag_lst, pred_tag_lst)
+                    num_gold_tag, num_pred_tag, num_tag_correct = pos_tag_f1(gold_seg_lst, pred_seg_lst)
                     all_gold_tag += num_gold_tag
                     all_pred_tag += num_pred_tag
                     all_tag_correct += num_tag_correct
@@ -274,38 +274,9 @@ class JointDParser(object):
 
         return pred_heads, pred_rels
 
-    # 直接统计预测错误的label的个数
-    def hamming_loss(self, pre_tags, true_tags, eta=0.1):
-        '''
-        :param pre_tags: N
-        :param true_tags: N
-        :param eta: margin loss discount
-        :return:
-        '''
-        return eta * torch.ne(pre_tags, true_tags).sum().item()
-
-    def margin_loss(self, pred, tgt, margin=1.):
-        '''
-        :param pred: (bz, num_cls)
-        :param tgt: (bz, )
-        :return:
-        '''
-        a = pred[torch.arange(pred.size(0), dtype=torch.long), tgt]
-        c = pred * (pred.data != a.data.unsqueeze(1)).float()
-        d = (margin + c).max(dim=1)[0]
-        loss = (d - a).mean()
-        return max(0, loss)
-
     def calc_tag_loss(self, tag_score, true_tags, non_pad_mask):
         masked_true_tags = true_tags.masked_fill(~non_pad_mask, -1)
         tag_loss = F.cross_entropy(tag_score.transpose(1, 2), masked_true_tags, ignore_index=-1)
-
-        # tag_loss = 0
-        # pred_tags = self.parser_model.tag_decode(tag_score, non_pad_mask)
-        # for ps, pt, tt, mask in zip(tag_score, pred_tags, true_tags, non_pad_mask):
-        #     m = self.hamming_loss(pt[mask], tt[mask])
-        #     tag_loss = tag_loss + self.margin_loss(ps[mask], tt[mask], margin=m)
-        # tag_loss = tag_loss / tag_score.size(0)
         return tag_loss
 
     def calc_dep_loss(self, pred_arcs, pred_rels, true_heads, true_rels, non_pad_mask):
@@ -331,7 +302,7 @@ class JointDParser(object):
         masked_true_rels = true_rels.masked_fill(pad_mask, -1)
         # (bz*seq_len, rel_size)  (bz*seq_len, )
         rel_loss = F.cross_entropy(pred_rels.transpose(1, 2), masked_true_rels, ignore_index=-1)
-        return arc_loss, rel_loss
+        return arc_loss + rel_loss
 
     def calc_acc(self, pred_arcs, pred_rels, true_heads, true_rels, non_pad_mask=None):
         '''a

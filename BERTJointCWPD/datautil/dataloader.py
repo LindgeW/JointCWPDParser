@@ -38,7 +38,7 @@ def batch_variable(batch_data, dep_vocab, device=torch.device('cpu')):
     rel_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
 
     # bert_seqs = []
-    bert_ids, bert_lens, bert_mask = [], [], []
+    bert_ids, bert_lens, bert_masks = [], [], []
     for i, deps in enumerate(batch_data):
         forms = []
         for j, dep in enumerate(deps):
@@ -49,15 +49,15 @@ def batch_variable(batch_data, dep_vocab, device=torch.device('cpu')):
             rel_idx[i, j] = dep_vocab.rel2index(dep.dep_rel)
         # bert_seqs.append(forms)
 
-        bert_id, bert_len = dep_vocab.bert2id(forms)
+        bert_id, bert_len, bert_mask = dep_vocab.bert2id(forms)
         bert_ids.append(bert_id)
         bert_lens.append(bert_len)
-        bert_mask.append([1] * len(bert_id))
+        bert_masks.append(bert_mask)
 
     # bert_ids, bert_lens, bert_mask = dep_vocab.bert_ids(bert_seqs)
     bert_ids = pad_sequence(bert_ids, dtype=torch.long, device=device)
     bert_lens = pad_sequence(bert_lens, dtype=torch.int, device=device)
-    bert_mask = pad_sequence(bert_mask, dtype=torch.uint8, device=device)
+    bert_mask = pad_sequence(bert_masks, dtype=torch.uint8, device=device)
 
     return (bert_ids, bert_lens, bert_mask), tag_idxs, head_idx, rel_idx
 

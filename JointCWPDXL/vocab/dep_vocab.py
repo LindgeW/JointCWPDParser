@@ -3,21 +3,27 @@ from datautil.dependency import read_deps
 from collections import Counter
 import numpy as np
 from functools import wraps
-from datautil.dataloader import ngram_generator
+
+
+def ngram_generator(token_lst: list, n=2):
+    ngrams = []
+    for i in range(len(token_lst)-n+1):
+        ngrams.append(''.join(token_lst[i:i+n]))
+    return ngrams
 
 
 def create_vocab(data_path, min_count=2):
     assert os.path.exists(data_path)
 
     root_rel = ''
-    ngram_counter, tag_counter, rel_counter = Counter(), Counter(), Counter()
+    char_counter, bichar_counter = Counter(), Counter()
+    tag_counter, rel_counter = Counter(), Counter()
     with open(data_path, 'r', encoding='utf-8') as fr:
         for deps in read_deps(fr):
             unigrams = []
             for dep in deps:
                 unigrams.append(dep.form)
                 tag_counter[dep.tag] += 1
-
                 if dep.head != 0:
                     rel_counter[dep.dep_rel] += 1
                 elif root_rel == '':
@@ -26,9 +32,13 @@ def create_vocab(data_path, min_count=2):
                 elif root_rel != dep.dep_rel:
                     print('root = ' + root_rel + ', rel for root = ' + dep.dep_rel)
             bigrams = ngram_generator(unigrams, n=2)
-            ngram_counter.update(unigrams+bigrams)
+            # trigrams = ngram_generator(unigrams, n=3)
+            char_counter.update(unigrams)
+            bichar_counter.update(bigrams)
 
-    return DepVocab(ngram_counter, tag_counter, rel_counter, root_rel, min_count=min_count)
+    char_vocab = DepVocab(char_counter, tag_counter, rel_counter, root_rel, min_count=min_count)
+    bichar_vocab = DepVocab(bichar_counter, min_count=min_count)
+    return char_vocab, bichar_vocab
 
 
 # 检查词表是否被创建
@@ -38,16 +48,10 @@ def _check_build_vocab(func):
         if self._word2idx is None:
             self.build_vocab()
         return func(self, *args, **kwargs)
-
     return _wrapper
 
 
 class DepVocab(object):
-    '''
-        词表
-        词性表
-        依存关系表
-    '''
     def __init__(self, wd_counter: Counter,
                  tag_counter: Counter = None,
                  rel_counter: Counter = None,
@@ -127,22 +131,6 @@ class DepVocab(object):
             print('embedding path does not exist!')
             return None
 
-        vec_tab = dict()
-        vec_size = 0
-        with open(embed_path, 'r', encoding='utf-8') as fin:
-            for line in fin:
-                tokens = line.strip().split()
-                wd, vec = tokens[0], tokens[1:]
-                if vec_size == 0:
-                    vec_size = len(vec)
-                vec_tab[wd] = np.asarray(vec, dtype=np.float32)
-
-        oov_ratio = 0
-        for wd in self._word2idx.keys():
-            if wd not in vec_tab:
-                oov_ratio += 1
-        print('oov ratio: %.2f%%' % (100 * (oov_ratio-3) / (len(self._word2idx)-3)))
-
         if self._extwd2idx is None:
             self._extwd2idx = dict()
             if self.padding is not None:
@@ -152,37 +140,40 @@ class DepVocab(object):
             if self.unknown is not None:
                 self._extwd2idx[self.unknown] = len(self._extwd2idx)
 
-        for wd in vec_tab.keys():
-            if wd not in self._extwd2idx:
-                self._extwd2idx[wd] = len(self._extwd2idx)
+        vec_size = 0
+        with open(embed_path, 'r', encoding='utf-8') as fin:
+            for line in fin:
+                tokens = line.strip().split()
+                if len(tokens) > 10:
+                    wd = tokens[0]
+                    if vec_size == 0:
+                        vec_size = len(tokens[1:])
+                    if wd not in self._extwd2idx:
+                        self._extwd2idx[wd] = len(self._extwd2idx)
 
         self._extidx2wd = dict((idx, wd) for wd, idx in self._extwd2idx.items())
 
-        embed_weights = np.zeros((len(self._extwd2idx), vec_size), dtype=np.float32)
+        oov_ratio = 0
+        for wd in self._word2idx.keys():
+            if wd not in self._extwd2idx:
+                oov_ratio += 1
+        print('oov ratio: %.2f%%' % (100 * (oov_ratio-3) / (len(self._word2idx)-3)))
+
+        wd_count = len(self._extwd2idx)
+        embed_weights = np.zeros((wd_count, vec_size), dtype=np.float32)
         unk_idx = self._extwd2idx[self.unknown]
-        wd_count = 0
-        for idx, wd in self._extidx2wd.items():
-            if wd in vec_tab:
-                embed_weights[idx] = vec_tab[wd]
-                embed_weights[unk_idx] += vec_tab[wd]
-                wd_count += 1
+        with open(embed_path, 'r', encoding='utf-8') as fin:
+            for line in fin:
+                tokens = line.strip().split()
+                if len(tokens) > 10:
+                    idx = self._extwd2idx[tokens[0]]
+                    vec = np.asarray(tokens[1:], dtype=np.float32)
+                    embed_weights[idx] = vec
+                    embed_weights[unk_idx] += vec
         # 已知词的词向量初始化的均值初始化未知向量
         embed_weights[unk_idx] /= wd_count
         embed_weights /= np.std(embed_weights)
-
         return embed_weights
-
-    def build_char_vocab(self, min_count=1, include_word_start_end=False):
-        char_counter = Counter()
-        for wd, idx in self._word2idx.items():
-            if wd not in [self.padding, self.unknown]:
-                char_counter.update(list(wd))
-
-        if include_word_start_end:
-            char_counter.update(['<c>', '</c>'])
-
-        char_vocab = DepVocab(char_counter, min_count=min_count)
-        return char_vocab
 
     @_check_build_vocab
     def word2index(self, wds):

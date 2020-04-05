@@ -80,7 +80,6 @@ class MultiHeadAttention(nn.Module):
         nn.init.normal_(self._linear_vs.weight, mean=0, std=math.sqrt(1 / self._d_model))
         nn.init.normal_(self._linear_out.weight, mean=0, std=math.sqrt(1 / self._d_model))
 
-
     def forward(self, q, k, v, att_mask=None):
         '''
         :param q: [bz, len_q, d_model]

@@ -432,10 +432,6 @@ class LocalDotProductAttention(nn.Module):
 
 
 if __name__ == '__main__':
-    add_att = AdditiveAttention(10, 5)
-    x = torch.rand(3, 10)
-    y = torch.rand(3, 10)
-    print(add_att(x, y).shape)
-
-
-
+    x = torch.ones(15, 15)
+    mask = x.triu(-9) * x.tril(9)
+    print(mask)

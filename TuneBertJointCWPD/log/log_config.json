@@ -1,0 +1,9 @@
+{
+  "default_log_path": "log/run.log",
+  "log_level": "info",
+  "enable_log": true,
+  "to_console": true,
+  "to_file": true,
+  "log_fmt": "%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s",
+  "date_fmt": "%m/%d/%Y %H:%M:%S %p"
+}

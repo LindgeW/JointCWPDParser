@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 
 
 class ResidualConv(nn.Module):
@@ -50,3 +51,33 @@ class ConvEncoder(nn.Module):
         enc_out = conv_out.transpose(1, 2)
 
         return enc_out
+
+
+# 提取k个最大值并保持相对顺序不变
+class KMaxPool1d(nn.Module):
+    def __init__(self, top_k: int):
+        super(KMaxPool1d, self).__init__()
+        self.top_k = top_k
+
+    def forward(self, inputs):
+        assert inputs.dim() == 3
+        # torch.topk和torch.sort均返回的是：values, indices
+        top_idxs = torch.topk(inputs, k=self.top_k, dim=2)[1]
+        sorted_top_idxs = top_idxs.sort(dim=2)[0]
+        # gather: 沿给定轴dim, 将输入索引张量index指定位置的值进行聚合(抽取)
+        return inputs.gather(dim=2, index=sorted_top_idxs)
+
+
+class ConvStack(nn.Module):
+    def __init__(self, in_features, out_features, num_convs=3, filter_size=100, kernel_sizes=(1, 3, 5), dropout=0.1):
+        super(ConvStack, self).__init__()
+
+        self.conv_stack = nn.Sequential()
+        for i in range(num_convs):
+            conv_i = ConvEncoder(in_features, out_features, filter_size, kernel_sizes, dropout)
+            self.conv_stack.add_module(f'conv_{i}', conv_i)
+            self.conv_stack.add_module(f'activate_{i}', nn.ReLU())
+
+    def forward(self, inputs):
+        return self.conv_stack(inputs)
+

@@ -23,6 +23,9 @@ class ScalarMix(Module):
                                                 for _ in range(mixture_size)])
         self.gamma = Parameter(torch.FloatTensor([1.0]))
 
+    def get_params(self):
+        return [p.data.item() for p in self.scalar_parameters]
+
     def forward(self, tensors: List[torch.Tensor],  # pylint: disable=arguments-differ
                 mask: torch.Tensor = None) -> torch.Tensor:
         """

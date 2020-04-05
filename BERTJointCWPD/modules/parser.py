@@ -105,8 +105,7 @@ class BiaffineParser(object):
         train_loss = 0
         all_arc_acc, all_rel_acc, all_arcs = 0, 0, 0
         start_time = time.time()
-        batch_chunk_size = args.batch_size // args.update_steps
-        for i, batch_data in enumerate(batch_iter(train_data, batch_chunk_size, True)):
+        for i, batch_data in enumerate(batch_iter(train_data, args.batch_size, True)):
             batcher = batch_variable(batch_data, vocab, args.device)
             # batcher = (x.to(args.device) for x in batcher)
             (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
@@ -130,7 +129,7 @@ class BiaffineParser(object):
 
             # 多次循环，梯度累积，相对于变相增大batch_size，节省存储
             if (i+1) % args.update_steps == 0 or (i == args.max_step-1):
-                nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=1.)
+                nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=args.grad_clip)
                 optimizer.step()  # 利用梯度更新网络参数
                 self.parser_model.zero_grad()  # 清空过往梯度
 
@@ -145,7 +144,7 @@ class BiaffineParser(object):
 
     # 训练多次
     def train(self, train_data, dev_data, test_data, args, vocab):
-        args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // args.batch_size)
+        args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size*args.update_steps))
         print('max step:', args.max_step)
         optimizer = Optimizer(filter(lambda p: p.requires_grad, self.parser_model.parameters()), args)
 
@@ -188,12 +187,11 @@ class BiaffineParser(object):
         self.parser_model.eval()
 
         all_gold_seg, all_pred_seg, all_seg_correct = 0, 0, 0
-        all_gold_seg2, all_pred_seg2, all_seg_correct2 = 0, 0, 0
         all_gold_tag, all_pred_tag, all_tag_correct = 0, 0, 0
         all_gold_arc, all_pred_arc, all_arc_correct, all_rel_correct = 0, 0, 0, 0
 
         with torch.no_grad():
-            for batch_data in batch_iter(test_data, args.test_batch_size, vocab):
+            for batch_data in batch_iter(test_data, args.test_batch_size):
                 batcher = batch_variable(batch_data, vocab, args.device)
                 # batcher = (x.to(args.device) for x in batcher)
                 (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
@@ -204,22 +202,15 @@ class BiaffineParser(object):
                 # pred_tags = self.parser_model.module.tag_decode(tag_score, bert_lens.gt(0))
                 pred_heads, pred_rels = self.decode(arc_score, rel_score, bert_lens.gt(0))
                 for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, vocab)):
-                    gold_seg_lst = cws_from_dep(batch_data[i])
-                    pred_seg_lst = cws_from_dep(sent_dep_tree)
-                    gold_tag_lst = cws_from_postag(batch_data[i])
-                    pred_tag_lst = cws_from_postag(sent_dep_tree)
+                    gold_seg_lst = cws_from_tag(batch_data[i])
+                    pred_seg_lst = cws_from_tag(sent_dep_tree)
 
                     num_gold_seg, num_pred_seg, num_seg_correct = calc_seg_f1(gold_seg_lst, pred_seg_lst)
                     all_gold_seg += num_gold_seg
                     all_pred_seg += num_pred_seg
                     all_seg_correct += num_seg_correct
 
-                    num_gold_seg2, num_pred_seg2, num_seg_correct2 = calc_seg_f1(gold_tag_lst, pred_tag_lst)
-                    all_gold_seg2 += num_gold_seg2
-                    all_pred_seg2 += num_pred_seg2
-                    all_seg_correct2 += num_seg_correct2
-
-                    num_gold_tag, num_pred_tag, num_tag_correct = pos_tag_f1(gold_tag_lst, pred_tag_lst)
+                    num_gold_tag, num_pred_tag, num_tag_correct = pos_tag_f1(gold_seg_lst, pred_seg_lst)
                     all_gold_tag += num_gold_tag
                     all_pred_tag += num_pred_tag
                     all_tag_correct += num_tag_correct
@@ -231,8 +222,6 @@ class BiaffineParser(object):
                     all_pred_arc += num_pred_arc
 
         seg_f1 = Metrics(all_gold_seg, all_pred_seg, all_seg_correct).F1
-        seg_f1_2 = Metrics(all_gold_seg2, all_pred_seg2, all_seg_correct2).F1
-        print('根据POSTag切词的F1: %.2f%%' % (100*seg_f1_2))
         tag_f1 = Metrics(all_gold_tag, all_pred_tag, all_tag_correct).F1
         udep_metric = Metrics(all_gold_arc, all_pred_arc, all_arc_correct)
         udep_f1 = udep_metric.F1

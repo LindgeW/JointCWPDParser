@@ -7,7 +7,7 @@ def get_data_path(json_path):
     assert os.path.exists(json_path)
     with open(json_path, 'r', encoding='utf-8') as fr:
         data_opts = json.load(fr)
-
+    print(data_opts)
     return data_opts
 
 
@@ -25,18 +25,16 @@ def args_config():
     parse.add_argument('--decay_step', type=int, default=10000, help='lr decay steps for optimizer')
     parse.add_argument('--weight_decay', type=float, default=1e-5, help='weight decay for optimizer')
     parse.add_argument('--scheduler', choices=['cosine', 'inv_sqrt', 'exponent', 'linear', 'const'], default='cosine', help='the type of lr scheduler')
+    parse.add_argument('--grad_clip', type=float, default=1., help='the max norm of gradient clip')
 
-    parse.add_argument('--batch_size', type=int, default=100, help='train batch size')
-    parse.add_argument('--test_batch_size', type=int, default=25, help='test batch size')
+    parse.add_argument('--batch_size', type=int, default=50, help='train batch size')
+    parse.add_argument('--test_batch_size', type=int, default=100, help='test batch size')
     parse.add_argument('--epoch', type=int, default=100, help='iteration of training')
-    parse.add_argument('--update_steps', type=int, default=4, help='gradient accumulation and update per x steps')
+    parse.add_argument('--update_steps', type=int, default=2, help='gradient accumulation and update per x steps')
 
     parse.add_argument('--char_embed_dim', type=int, default=100, help='char embedding size')
-    parse.add_argument('--embed_size', type=int, default=100, help='final char input size')
     parse.add_argument('--tag_embed_dim', type=int, default=100, help='pos_tag embedding size')
 
-    parse.add_argument('--num_convs', type=int, default=5, help='the depth of convolutional layer')
-    parse.add_argument('--kernel_size', type=int, default=5, help='the window size of convolution')
     parse.add_argument('--lstm_depth', type=int, default=3, help='the depth of lstm layer')
     parse.add_argument('--arc_mlp_size', type=int, default=200, help='arc mlp size')
     parse.add_argument('--label_mlp_size', type=int, default=100, help='label mlp size')
@@ -48,12 +46,9 @@ def args_config():
     parse.add_argument("--nb_heads", type=int, default=8, help='sub-layer feature size')
     parse.add_argument("--encoder_layer", type=int, default=6, help='the number of encoder layer')
 
-    parse.add_argument("--hidden_size", type=int, default=400, help='the output size of encoder layer')
-
     parse.add_argument('--embed_drop', type=float, default=0.2, help='embedding dropout')
     parse.add_argument('--enc_drop', type=float, default=0.2, help='encoder dropout')
     parse.add_argument('--att_drop', type=float, default=0.1, help='attention dropout')
-    parse.add_argument('--cnn_drop', type=float, default=0.2, help='CNN layer dropout')
     parse.add_argument('--arc_mlp_drop', type=float, default=0.2, help='Arc MLP dropout')
     parse.add_argument('--label_mlp_drop', type=float, default=0.2, help='Label MLP dropout')
 
