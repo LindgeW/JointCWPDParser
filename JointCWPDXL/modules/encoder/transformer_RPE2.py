@@ -13,10 +13,6 @@ class PositionalEmbedding(nn.Module):
         self.register_buffer('inv_freq', inv_freq)
 
     def forward(self, pos_seq, bsz=None):
-        '''
-        :param pos_seq: (seq_len, )
-        :return:
-        '''
         sinusoid_inp = torch.ger(pos_seq, self.inv_freq)
         pos_emb = torch.cat(tuple([sinusoid_inp.sin(), sinusoid_inp.cos()]), dim=-1)
         if bsz is not None:
@@ -73,48 +69,47 @@ class PositionwiseFF(nn.Module):
         return output
 
 
-class PositionwiseFeedForward(nn.Module):
-    def __init__(self, d_model, d_inner, dropout=0.1):
-        super(PositionwiseFeedForward, self).__init__()
-        self.ffn = nn.Sequential(
-            nn.Conv1d(in_channels=d_model,
-                      out_channels=d_inner,
-                      kernel_size=1),  # 权重共享
-            nn.ReLU(),
-            nn.Conv1d(in_channels=d_inner,
-                      out_channels=d_model,
-                      kernel_size=1)
-        )
-
-        self._layer_norm = nn.LayerNorm(d_model, eps=LAYER_NORM_EPS)
-
-        self._dropout = Dropout(dropout)
-
-    def forward(self, inputs):
-        '''
-        :param inputs: [bz, len_q, d_model]
-        :return: [bz, len_q, d_model]
-        '''
-        residual = inputs
-        # [bz, len_q, d_model] -> [bz, d_model, len_q]
-        fc_in = inputs.transpose(1, 2)
-        # [bz, d_model, len_q]
-        fc_out = self.ffn(fc_in)
-        # [bz, len_q, d_model]
-        out = fc_out.transpose(1, 2)
-        out = self._dropout(out)
-        return self._layer_norm(residual + out)
+# class PositionwiseFeedForward(nn.Module):
+#     def __init__(self, d_model, d_inner, dropout=0.1):
+#         super(PositionwiseFeedForward, self).__init__()
+#         self.ffn = nn.Sequential(
+#             nn.Conv1d(in_channels=d_model,
+#                       out_channels=d_inner,
+#                       kernel_size=1),  # 权重共享
+#             nn.ReLU(),
+#             nn.Conv1d(in_channels=d_inner,
+#                       out_channels=d_model,
+#                       kernel_size=1)
+#         )
+#
+#         self._layer_norm = nn.LayerNorm(d_model, eps=LAYER_NORM_EPS)
+#
+#         self._dropout = Dropout(dropout)
+#
+#     def forward(self, inputs):
+#         '''
+#         :param inputs: [bz, len_q, d_model]
+#         :return: [bz, len_q, d_model]
+#         '''
+#         residual = inputs
+#         # [bz, len_q, d_model] -> [bz, d_model, len_q]
+#         fc_in = inputs.transpose(1, 2)
+#         # [bz, d_model, len_q]
+#         fc_out = self.ffn(fc_in)
+#         # [bz, len_q, d_model]
+#         out = fc_out.transpose(1, 2)
+#         out = self._dropout(out)
+#         return self._layer_norm(residual + out)
 
 
 class RelMultiHeadAttn(nn.Module):
-    def __init__(self, n_head, d_model, d_head, dropout=0.0, dropatt=0.0, pre_norm=False):
+    def __init__(self, n_head, d_model, d_head, dropout=0.1, dropatt=0.1, pre_norm=False):
         super(RelMultiHeadAttn, self).__init__()
 
         self.d_model = d_model
         self.n_head = n_head
         self.d_head = d_head
         self.scale = 1. / (d_head ** 0.5)
-        self.inf = -1e9  # -float('inf')
 
         self.qkv_net = nn.Linear(d_model, 3 * n_head * d_head, bias=False)
         self.r_net = nn.Linear(d_model, n_head * d_head, bias=False)
@@ -126,7 +121,6 @@ class RelMultiHeadAttn(nn.Module):
         self.pre_norm = pre_norm
 
     # def _rel_shift(self, x, zero_triu=False):
-    #     """Explanation: https://github.com/kimiyoung/transformer-xl/issues/8#issuecomment-454458852"""
     #     (T, C), tail = x.shape[:2], x.shape[2:]
     #
     #     zero_pad = torch.zeros((T, 1) + tail, device=x.device, dtype=x.dtype)
@@ -176,11 +170,11 @@ class RelMultiHeadAttn(nn.Module):
         if att_mask is not None:  # 3-dim
             if att_mask.dim() == 2:
                 attn_score = attn_score.float().masked_fill(
-                    att_mask[None, :, :, None], self.inf).type_as(attn_score)
+                    att_mask[None, :, :, None], -1e9).type_as(attn_score)
 
             elif att_mask.dim() == 3:
                 attn_score = attn_score.float().masked_fill(
-                    att_mask[:, :, :, None], self.inf).type_as(attn_score)
+                    att_mask[:, :, :, None], -1e9).type_as(attn_score)
 
         # [qlen x klen x bsz x n_head]
         attn_prob = F.softmax(attn_score, dim=1)
@@ -203,7 +197,7 @@ class RelMultiHeadAttn(nn.Module):
 
 
 class RelDecoder(nn.Module):
-    def __init__(self, n_head, d_model, d_head, d_inner, drop=0.1, dropatt=0.0, pre_norm=False):
+    def __init__(self, n_head, d_model, d_head, d_inner, drop=0.1, dropatt=0.1, pre_norm=False):
         super(RelDecoder, self).__init__()
 
         self.attn = RelMultiHeadAttn(n_head, d_model, d_head, dropout=drop, dropatt=dropatt, pre_norm=pre_norm)
@@ -249,28 +243,26 @@ class TransformerXL(nn.Module):
         assert d_model == self.d_model
 
         attn_mask = None if seq_mask is None else ~seq_mask
-
         beg, end = T, -T
         fw_pos_seq = torch.arange(beg, end, -1., device=h.device, dtype=h.dtype)
         bw_pos_seq = torch.arange(-beg, -end, 1., device=h.device, dtype=h.dtype)
-        fw_pos_embed = self.pos_emb(fw_pos_seq, B // 2)
+        fw_pos_embed = self.pos_emb(fw_pos_seq, B // 2)  # B为偶数
         bw_pos_embed = self.pos_emb(bw_pos_seq, B - B // 2)
         pos_embed = torch.cat((fw_pos_embed, bw_pos_embed), dim=1)  # (T, B, d_model)
 
         h = self.layer_norm(h)
-        hids = [h]
+        hids = [h.transpose(0, 1)]
         h_out = self.drop(h)
         pos_embed = self.drop(pos_embed)
 
         for i, layer in enumerate(self.layers):
             h_out = layer(h_out, pos_embed, self.r_w_bias, self.r_r_bias, attn_mask=attn_mask)
-            hids.append(h_out)
+            hids.append(h_out.transpose(0, 1))
 
         # h_out = self.drop(h_out)
 
         if self.batch_first:
             h_out = h_out.transpose(0, 1)
-            hids = [hi.transpose(0, 1) for hi in hids]
 
         return h_out, hids
 
