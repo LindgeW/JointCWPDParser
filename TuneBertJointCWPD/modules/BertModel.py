@@ -14,7 +14,7 @@ class BertEmbedding(nn.Module):
         self.nb_layers = nb_layers if nb_layers < self.bert_layers else self.bert_layers
         self.hidden_size = self.bert.config.hidden_size
         # self.proj = nn.Linear(in_features=self.hidden_size, out_features=out_dim)
-        # self.projs = nn.ModuleList([NonlinearMLP(self.hidden_size, out_dim, activation=gelu, bias=False) for _ in range(self.nb_layers)])
+        # self.projs = nn.ModuleList([NonlinearMLP(self.hidden_size, out_dim, activation=gelu) for _ in range(self.nb_layers)])
         self.projs = nn.ModuleList([nn.Linear(self.hidden_size, out_dim, bias=False) for _ in range(self.nb_layers)])
 
     def forward(self, bert_ids, bert_lens, bert_mask):
