@@ -95,7 +95,8 @@ class DepVocab(object):
             if freq > self.min_count and wd not in self._word2idx:
                 self._word2idx[wd] = len(self._word2idx)
         self._idx2wd = dict((idx, wd) for wd, idx in self._word2idx.items())
-
+        del self.wd_counter
+        
         if self.tag_counter is not None:
             if self._tag2idx is None:
                 self._tag2idx = dict()
@@ -110,7 +111,8 @@ class DepVocab(object):
                 if tag not in self._tag2idx:
                     self._tag2idx[tag] = len(self._tag2idx)
             self._idx2tag = dict((idx, tag) for tag, idx in self._tag2idx.items())
-
+            del self.tag_counter
+            
         if self.rel_counter is not None:
             if self._rel2idx is None:
                 self._rel2idx = dict()
@@ -123,6 +125,8 @@ class DepVocab(object):
                 if rel not in self._rel2idx:
                     self._rel2idx[rel] = len(self._rel2idx)
             self._idx2rel = dict((idx, rel) for rel, idx in self._rel2idx.items())
+            del self.rel_counter
+            
         return self
 
     @_check_build_vocab
