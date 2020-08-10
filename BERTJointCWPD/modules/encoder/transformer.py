@@ -40,25 +40,25 @@ class SelfAttention(nn.Module):
         if att_mask is not None:
             att_weights = att_weights.masked_fill(att_mask, -1e9)  # float('-inf')
 
-        x = att_weights.new_full(att_weights.shape, -1e9, requires_grad=False)
-        fw_mask = x.tril(diagonal=-1)  # 下三角矩阵
-        bw_mask = x.triu(diagonal=1)  # 上三角矩阵
-        fw_att_weights = att_weights + fw_mask
-        bw_att_weights = att_weights + bw_mask
+        # x = att_weights.new_full(att_weights.shape, -1e9, requires_grad=False)
+        # fw_mask = x.tril(diagonal=-1)  # 下三角矩阵
+        # bw_mask = x.triu(diagonal=1)  # 上三角矩阵
+        # fw_att_weights = att_weights + fw_mask
+        # bw_att_weights = att_weights + bw_mask
 
         # [bz, len_q, len_k]
-        # soft_att_weights = self.softmax(att_weights)
-        soft_fw_att_weights = self.softmax(fw_att_weights)
-        soft_bw_att_weights = self.softmax(bw_att_weights)
+        soft_att_weights = self.softmax(att_weights)
+        # soft_fw_att_weights = self.softmax(fw_att_weights)
+        # soft_bw_att_weights = self.softmax(bw_att_weights)
 
         if self.training:
-            # soft_att_weights = self._dropout(soft_att_weights)
-            soft_fw_att_weights = self._dropout(soft_fw_att_weights)
-            soft_bw_att_weights = self._dropout(soft_bw_att_weights)
+            soft_att_weights = self._dropout(soft_att_weights)
+            # soft_fw_att_weights = self._dropout(soft_fw_att_weights)
+            # soft_bw_att_weights = self._dropout(soft_bw_att_weights)
 
         # [bz, len_q, len_k] * [bz, len_v, V] -> [bz, len_q, V]
-        # att_out = torch.matmul(soft_att_weights, v)
-        att_out = torch.matmul(soft_fw_att_weights, v) + torch.matmul(soft_bw_att_weights, v)
+        att_out = torch.matmul(soft_att_weights, v)
+        # att_out = torch.matmul(soft_fw_att_weights, v) + torch.matmul(soft_bw_att_weights, v)
         # att_out = torch.cat((torch.matmul(soft_fw_att_weights, v) + torch.matmul(soft_bw_att_weights, v)), dim=-1)
 
         return att_out
@@ -259,34 +259,3 @@ class TransformerEncoder(nn.Module):
 
         return encoder_out, all_enc_outs
 
-
-import matplotlib.pyplot as plt
-def show_bar(atts):
-    plt.rcParams['font.sans-serif'] = ['SimHei']
-    plt.rcParams['axes.unicode_minus'] = False
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(atts, cmap='bone')
-    fig.colorbar(cax)
-    # ax.set_xticklabels(['a', 'b', 'c', 'e'])
-    # ax.set_yticklabels(['天', '津', '大', '学'])
-    # plt.xticks(fontsize=15)
-    # plt.yticks(fontsize=15)
-    plt.show()
-
-import seaborn as sns
-def show_bar2(atts):
-    plt.rcParams['font.sans-serif'] = ['SimHei']
-    plt.rcParams['axes.unicode_minus'] = False
-    heatmap = sns.heatmap(atts, cmap='bone', cbar=True)
-    # heatmap = sns.heatmap(atts, annot=True, fmt='f')
-    # heatmap = sns.heatmap(atts, center=0)  # center=0 对于有正有负的数据而言颜色差异更大
-    # heatmap.set_xticklabels(['a', 'b', 'c', 'd'])
-    # heatmap.set_yticklabels(['天', '津', '大', '学'])
-    plt.show()
-
-if __name__ == '__main__':
-    pe = PositionEncoding(50, 100)
-    # print(pe[:2])
-    # show_bar(pe)
-    show_bar2(pe)

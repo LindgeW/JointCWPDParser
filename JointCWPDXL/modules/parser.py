@@ -15,9 +15,9 @@ class Optimizer(object):
         self.args = args
         self.train_step = 0
         # self.optimizer = optim.Adam(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps)
-        # self.optimizer = optim.Adadelta(params, lr=args.learning_rate, eps=args.eps)
         self.optimizer = AdamW(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps, weight_decay=args.weight_decay)
 
+        lr_scheduler = None
         if args.scheduler == 'cosine':
             lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=args.max_step, eta_min=1e-6)
         elif args.scheduler == 'exponent':
@@ -33,23 +33,26 @@ class Optimizer(object):
                     return 1. / (step ** 0.5) if step > args.warmup_step else step / (args.warmup_step ** 1.5)
 
             lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-        else:
+        elif args.scheduler == 'linear':
             lr_scheduler = WarmupLinearSchedule(self.optimizer, warmup_steps=args.warmup_step, t_total=args.max_step)
+        else:
+            pass
 
         self.lr_scheduler = lr_scheduler
 
     def step(self):
         self.optimizer.step()
 
-        self.train_step += 1
-        if self.args.scheduler in ['cosine', 'const']:
-            if self.train_step < self.args.warmup_step:
-                curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
-                self.optimizer.param_groups[0]['lr'] = curr_lr
+        if self.lr_scheduler is not None:
+            self.train_step += 1
+            if self.args.scheduler in ['cosine', 'const']:
+                if self.train_step < self.args.warmup_step:
+                    curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
+                    self.optimizer.param_groups[0]['lr'] = curr_lr
+                else:
+                    self.lr_scheduler.step(self.train_step)
             else:
                 self.lr_scheduler.step(self.train_step)
-        else:
-            self.lr_scheduler.step(self.train_step)
 
         self.optimizer.zero_grad()
 
@@ -64,7 +67,6 @@ class Optimizer(object):
         return self.train_step
 
     def get_lr(self):
-        # current_lr = self.lr_scheduler.get_lr()[0]
         current_lr = self.optimizer.param_groups[0]['lr']
         return current_lr
 
@@ -108,7 +110,6 @@ class JointDParser(object):
         train_loss = 0
         all_arc_acc, all_rel_acc, all_arcs = 0, 0, 0
         start_time = time.time()
-        # lmbd = 1e-4
         for i, batch_data in enumerate(batch_iter(train_data, args.batch_size, True)):
             batcher = batch_variable(batch_data, *vocab, args.device)
             # batcher = (x.to(args.device) for x in batcher)
@@ -116,12 +117,8 @@ class JointDParser(object):
 
             tag_score, arc_score, rel_score = self.parser_model(ngram_idxs, extngram_idxs, mask=non_pad_mask)
 
-            # reg_loss = 0
-            # for param in filter(lambda p: p.requires_grad, self.parser_model.parameters()):
-            #     reg_loss = reg_loss + 0.5 * param.norm(2) ** 2
-
-            tag_loss = self.calc_tag_loss(tag_score, true_tags, non_pad_mask)
-            # tag_loss = self.parser_model.tag_loss(tag_score, true_tags, non_pad_mask)
+            tag_loss = self.parser_model.tag_loss(tag_score, true_tags, non_pad_mask)
+            # tag_loss = self.calc_tag_loss(tag_score, true_tags, non_pad_mask)
             dep_loss = self.calc_dep_loss(arc_score, rel_score, true_heads, true_rels, non_pad_mask)
             loss = tag_loss + dep_loss
             if args.update_steps > 1:
@@ -155,7 +152,7 @@ class JointDParser(object):
     # 训练多次
     def train(self, train_data, dev_data, test_data, args, *vocab):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size * args.update_steps))
-        # args.warmup_step = args.max_step // 2
+        args.warmup_step = args.max_step // 2
         print('max step:', args.max_step)
         optimizer = Optimizer(filter(lambda p: p.requires_grad, self.parser_model.parameters()), args)
         best_udep_f1 = 0
@@ -206,10 +203,8 @@ class JointDParser(object):
                 ngram_idxs, extngram_idxs, true_tags, true_heads, true_rels, non_pad_mask = batcher
 
                 tag_score, arc_score, rel_score = self.parser_model(ngram_idxs, extngram_idxs, non_pad_mask)
-                pred_tags = tag_score.data.argmax(dim=-1)
-                # pred_tags = self.parser_model.tag_decode(tag_score, non_pad_mask)
-                # 多GPU训练
-                # pred_tags = self.parser_model.module.tag_decode(tag_score, non_pad_mask)
+                pred_tags = self.parser_model.tag_decode(tag_score, non_pad_mask)
+                # pred_tags = tag_score.data.argmax(dim=-1)
                 pred_heads, pred_rels = self.decode(arc_score, rel_score, non_pad_mask)
                 for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, char_vocab)):
                     gold_seg_lst, pred_seg_lst = cws_from_tag(batch_data[i]), cws_from_tag(sent_dep_tree)

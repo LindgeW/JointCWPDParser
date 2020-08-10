@@ -4,8 +4,10 @@ from .scale_mix import ScalarMix
 
 
 class BertEmbedding(nn.Module):
-    def __init__(self, model_path, nb_layers, out_dim, requires_grad=False):
+    def __init__(self, model_path, nb_layers, out_dim, merge='linear', requires_grad=False):
         super(BertEmbedding, self).__init__()
+        assert merge.lower() in ['none', 'linear', 'mean']
+        self.merge = merge.lower()
         self.bert = BertModel.from_pretrained(model_path, output_hidden_states=True)
         self.requires_grad = requires_grad
         self.bert_layers = self.bert.config.num_hidden_layers
@@ -15,6 +17,10 @@ class BertEmbedding(nn.Module):
         self.proj = nn.Linear(in_features=self.hidden_size, out_features=out_dim, bias=False)
         for p in self.bert.named_parameters():
             p[1].requires_grad = False
+        self.reset_params()
+
+    def reset_params(self):
+        nn.init.xavier_uniform_(self.proj.weight)
 
     def forward(self, bert_ids, bert_lens, bert_mask):
         '''
@@ -32,9 +38,16 @@ class BertEmbedding(nn.Module):
         with torch.no_grad():
             _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
             # _, _, all_enc_outs = self.bert(bert_ids)
-            all_enc_outs = all_enc_outs[-self.nb_layers:]
+            top_enc_outs = all_enc_outs[-self.nb_layers:]
 
-        bert_out = self.scale(all_enc_outs)  # (bz, seq_len, 768)
+        if self.merge == 'linear':
+            bert_out = self.scale(top_enc_outs)  # (bz, seq_len, 768)
+        elif self.merge == 'mean':
+            bert_out = sum(top_enc_outs) / len(top_enc_outs)
+        else:
+            # bert_out = last_enc_out
+            bert_out = top_enc_outs[-2]
+
         # 根据bert piece长度切分
         bert_chunks = bert_out[bert_mask].split(bert_lens[mask].tolist())
         bert_out = torch.stack(tuple([bc.mean(0) for bc in bert_chunks]))

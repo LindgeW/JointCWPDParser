@@ -22,7 +22,7 @@ class Metrics(object):
 
     @property
     def F1(self):
-        f1 = (2. * self.precision * self.recall) / (self.precision + self.recall + self.eps)
+        f1 = (2. * self.nb_correct) / (self.nb_gold + self.nb_pred + self.eps)
         return f1
 
     def get_metrics(self):

@@ -80,6 +80,7 @@ class NonlinearMLP(nn.Module):
         self.linear = nn.Linear(in_features=in_feature,
                                 out_features=out_feature,
                                 bias=bias)
+        self.reset_parameters()
 
     def reset_parameters(self):
         nn.init.orthogonal_(self.linear.weight)

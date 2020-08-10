@@ -4,9 +4,7 @@ from typing import List
 
 # 计算F1值
 def calc_f1(num_gold, num_pred, num_correct, eps=1e-10):
-    precision = num_correct / num_pred
-    recall = num_correct / num_gold
-    f1 = (2. * precision * recall) / (precision + recall + eps)
+    f1 = (2. * num_correct) / (num_gold + num_pred + eps)
     return f1
 
 

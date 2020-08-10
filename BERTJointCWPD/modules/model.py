@@ -63,6 +63,7 @@ class ParserModel(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        nn.init.xavier_uniform_(self.tag_mlp.weight)
         nn.init.xavier_uniform_(self.tag_embedding)
         with torch.no_grad():
             self.tag_embedding[0].fill_(0)

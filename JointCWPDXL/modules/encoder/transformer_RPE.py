@@ -188,7 +188,7 @@ class RelMultiHeadAttn(nn.Module):
 
 
 class RelDecoder(nn.Module):
-    def __init__(self, n_head, d_model, d_head, d_inner, drop=0.1, dropatt=0.0, pre_norm=False):
+    def __init__(self, n_head, d_model, d_head, d_inner, drop=0.1, dropatt=0.1, pre_norm=False):
         super(RelDecoder, self).__init__()
 
         self.attn = RelMultiHeadAttn(n_head, d_model, d_head, dropout=drop, dropatt=dropatt, pre_norm=pre_norm)
@@ -213,13 +213,16 @@ class TransformerXL(nn.Module):
         self.pos_emb = PositionalEmbedding(self.d_model)
         self.batch_first = batch_first
 
-        # self.r_r_bias = nn.Parameter(torch.zeros((n_head, d_head)))
-        # self.r_w_bias = nn.Parameter(torch.zeros((n_head, d_head)))
-        self.r_r_bias = nn.Parameter(torch.zeros((n_layer, n_head, d_head)))
-        self.r_w_bias = nn.Parameter(torch.zeros((n_layer, n_head, d_head)))
+        self.r_r_bias = nn.Parameter(torch.zeros((n_head, d_head)))
+        self.r_w_bias = nn.Parameter(torch.zeros((n_head, d_head)))
+        # self.r_r_bias = nn.Parameter(torch.zeros((n_layer, n_head, d_head)))
+        # self.r_w_bias = nn.Parameter(torch.zeros((n_layer, n_head, d_head)))
+        self.layer_norm = nn.LayerNorm(d_model, eps=LAYER_NORM_EPS)
+        self.reset_params()
+
+    def reset_params(self):
         nn.init.xavier_normal_(self.r_r_bias)
         nn.init.xavier_normal_(self.r_w_bias)
-        self.layer_norm = nn.LayerNorm(d_model, eps=LAYER_NORM_EPS)
 
     def forward(self, h, seq_mask=None):
         """
@@ -235,10 +238,10 @@ class TransformerXL(nn.Module):
         T, B, d_model = h.size()
         assert d_model == self.d_model
 
-        pad_mask = None if seq_mask is None else ~seq_mask[None]
-        all_ones = h.new_ones((T, T), requires_grad=False).byte()
+        # pad_mask = None if seq_mask is None else ~seq_mask[None]
+        all_ones = h.new_ones((T, T), requires_grad=False).byte()  # using .bool() for higher torch version
         attn_mask = torch.triu(all_ones, 1)[:, :, None]
-        attn_mask = (attn_mask + pad_mask) > 0
+        # attn_mask = (attn_mask + pad_mask) > 0
 
         pos_seq = torch.arange(T-1, -1, -1., device=h.device, dtype=h.dtype)
         pos_embed = self.pos_emb(pos_seq)
@@ -249,36 +252,14 @@ class TransformerXL(nn.Module):
         pos_embed = self.drop(pos_embed)
 
         for i, layer in enumerate(self.layers):
-            h_out = layer(h_out, pos_embed, self.r_w_bias[i], self.r_r_bias[i], attn_mask=attn_mask)
+            # h_out = layer(h_out, pos_embed, self.r_w_bias[i], self.r_r_bias[i], attn_mask=attn_mask)
+            h_out = layer(h_out, pos_embed, self.r_w_bias, self.r_r_bias, attn_mask=attn_mask)
             hids.append(h_out.transpose(0, 1))
 
-        h_out = self.drop(h_out)
+        # h_out = self.drop(h_out)
 
         if self.batch_first:
             h_out = h_out.transpose(0, 1)
 
         return h_out, hids
-
-
-import matplotlib.pyplot as plt
-def show_bar(atts):
-    plt.rcParams['font.sans-serif'] = ['SimHei']
-    plt.rcParams['axes.unicode_minus'] = False
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(atts, cmap='bone')
-    fig.colorbar(cax)
-    # ax.set_xticklabels(['a', 'b', 'c', 'e'])
-    # ax.set_yticklabels(['天', '津', '大', '学'])
-    # plt.xticks(fontsize=15)
-    # plt.yticks(fontsize=15)
-    plt.show()
-
-if __name__ == '__main__':
-    pe = PositionalEmbedding(100)
-    x = torch.arange(50).float()
-    pos = pe(x).squeeze()
-
-    show_bar(pos.numpy())
-
 

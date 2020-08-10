@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a7248c2d-70f2-4904-a3ff-f709dd76a474" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/BERTJointCWPD.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/datautil/char_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/datautil/char_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/BertModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/BertModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/encoder/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/encoder/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/encoder/transformer_RPE.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/encoder/transformer_RPE.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/encoder/transformer_RPE2.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/encoder/transformer_RPE2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/layer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/vocab/dep_vocab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/datautil/char_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/datautil/char_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/encoder/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/encoder/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/encoder/transformer_RPE.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/encoder/transformer_RPE.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/encoder/transformer_RPE2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/encoder/transformer_RPE2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/layer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/modules/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/modules/parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/vocab/dep_vocab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/datautil/char_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/datautil/char_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/BertModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/BertModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/layer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/vocab/dep_vocab.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/encoder/transformer2.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-2812">
+              <caret line="123" column="22" lean-forward="true" selection-start-line="123" selection-start-column="22" selection-end-line="123" selection-end-column="22" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/encoder/transformer.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="9004">
+              <caret line="261" lean-forward="true" selection-start-line="261" selection-end-line="261" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/encoder/transformer_RPE2.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-724">
+              <caret line="214" lean-forward="true" selection-start-line="214" selection-end-line="214" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/train.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="38" column="23" selection-start-line="38" selection-start-column="23" selection-end-line="38" selection-end-column="23" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/model.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-2200">
+              <caret line="11" column="8" selection-start-line="11" selection-start-column="8" selection-end-line="11" selection-end-column="8" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/BertModel.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="468">
+              <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/parser.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5040">
+              <caret line="207" column="43" lean-forward="true" selection-start-line="207" selection-start-column="43" selection-end-line="207" selection-end-column="43" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/metrics.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="792">
+              <caret line="25" column="17" lean-forward="true" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/datautil/char_utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="752">
+              <caret line="156" column="28" lean-forward="true" selection-start-line="156" selection-start-column="28" selection-end-line="156" selection-end-column="28" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vocab/dep_vocab.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="720">
+              <caret line="71" selection-start-line="71" selection-end-line="71" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/modules/layer.py" />
+        <option value="$PROJECT_DIR$/modules/BertModel.py" />
+        <option value="$PROJECT_DIR$/modules/metrics.py" />
+        <option value="$PROJECT_DIR$/modules/model.py" />
+        <option value="$PROJECT_DIR$/modules/encoder/transformer.py" />
+        <option value="$PROJECT_DIR$/modules/encoder/transformer_RPE.py" />
+        <option value="$PROJECT_DIR$/modules/encoder/transformer_RPE2.py" />
+        <option value="$PROJECT_DIR$/vocab/dep_vocab.py" />
+        <option value="$PROJECT_DIR$/datautil/char_utils.py" />
+        <option value="$PROJECT_DIR$/modules/parser.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-479" />
+    <option name="y" value="162" />
+    <option name="width" value="1937" />
+    <option name="height" value="491" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="BERTJointCWPD" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BERTJointCWPD" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="BERTJointCWPD" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BERTJointCWPD" type="462c0819:PsiDirectoryNode" />
+              <item name="conf" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="BERTJointCWPD" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BERTJointCWPD" type="462c0819:PsiDirectoryNode" />
+              <item name="datautil" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="BERTJointCWPD" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BERTJointCWPD" type="462c0819:PsiDirectoryNode" />
+              <item name="modules" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="BERTJointCWPD" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BERTJointCWPD" type="462c0819:PsiDirectoryNode" />
+              <item name="modules" type="462c0819:PsiDirectoryNode" />
+              <item name="encoder" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="BERTJointCWPD" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BERTJointCWPD" type="462c0819:PsiDirectoryNode" />
+              <item name="vocab" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a7248c2d-70f2-4904-a3ff-f709dd76a474" name="Default Changelist" comment="" />
+      <created>1597048116892</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1597048116892</updated>
+      <workItem from="1597048118434" duration="4827000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="4827000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <layout>
+      <window_info id="Favorites" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19581544" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Python Console" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Remote Host" />
+      <window_info anchor="right" id="SciView" />
+      <window_info anchor="right" id="Database" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/modules/layer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1980">
+          <caret line="19" column="31" selection-start-line="19" selection-start-column="31" selection-end-line="19" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/optimizer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-432">
+          <folding>
+            <element signature="e#0#33#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/dropout.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datautil/corpus_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-108">
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/crf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#33#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/char_embedding.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-324">
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datautil/dependency.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1080" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datautil/draw.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datautil/dataloader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-864">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/encoder/bilstm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2884">
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/encoder/rnn_encoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/encoder/transformer_RPE.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1940">
+          <caret line="262" column="41" lean-forward="true" selection-start-line="262" selection-start-column="41" selection-end-line="262" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vocab/dep_vocab.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="720">
+          <caret line="71" selection-start-line="71" selection-end-line="71" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datautil/char_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="752">
+          <caret line="156" column="28" lean-forward="true" selection-start-line="156" selection-start-column="28" selection-end-line="156" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/metrics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="792">
+          <caret line="25" column="17" lean-forward="true" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/BertModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2200">
+          <caret line="11" column="8" selection-start-line="11" selection-start-column="8" selection-end-line="11" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/parser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5040">
+          <caret line="207" column="43" lean-forward="true" selection-start-line="207" selection-start-column="43" selection-end-line="207" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/encoder/transformer_RPE2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-724">
+          <caret line="214" lean-forward="true" selection-start-line="214" selection-end-line="214" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/encoder/transformer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9004">
+          <caret line="261" lean-forward="true" selection-start-line="261" selection-end-line="261" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/encoder/transformer2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2812">
+          <caret line="123" column="22" lean-forward="true" selection-start-line="123" selection-start-column="22" selection-end-line="123" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="38" column="23" selection-start-line="38" selection-start-column="23" selection-end-line="38" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

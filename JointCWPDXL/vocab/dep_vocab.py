@@ -92,7 +92,7 @@ class DepVocab(object):
                 self._word2idx[self.unknown] = len(self._word2idx)
 
         for wd, freq in self.wd_counter.items():
-            if freq > self.min_count and wd not in self._word2idx:
+            if freq >= self.min_count and wd not in self._word2idx:
                 self._word2idx[wd] = len(self._word2idx)
         self._idx2wd = dict((idx, wd) for wd, idx in self._word2idx.items())
 

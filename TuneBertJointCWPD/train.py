@@ -51,6 +51,7 @@ if __name__ == '__main__':
     parser_model = parser_model.to(args.device)
     biff_parser = BiaffineParser(parser_model)
     biff_parser.summary()
+    print('模型参数量：', sum(p.numel() for p in parser_model.parameters() if p.requires_grad))
 
     biff_parser.train(train_data, dev_data, test_data, args, dep_vocab)
 

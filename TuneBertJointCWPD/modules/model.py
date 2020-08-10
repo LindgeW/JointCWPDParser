@@ -35,23 +35,19 @@ class BaseModel(nn.Module):
         self.label_biaffine = Biaffine(args.label_mlp_size,
                                        args.rel_size, bias=(True, True))
 
-        self.reset_parameters()
-
         self.scale_tag = ScalarMix(mixture_size=args.encoder_layer)
         self.scale_dep = ScalarMix(mixture_size=args.encoder_layer)
+        self.reset_parameters()
 
     def reset_parameters(self):
+        nn.init.xavier_uniform_(self.tag_mlp.weight)
         nn.init.xavier_uniform_(self.tag_embedding)
         with torch.no_grad():
             self.tag_embedding[0].fill_(0)
 
     def forward(self, bert_out, mask):
-        # enc_out = self.bilstm(bert_embed, mask)
-        # last_out, enc_outs = self.transformer(bert_embed, mask)
-        # last_out, enc_outs = self.transformer_xl(bert_embed, mask)
-        # enc_out = self.scale(enc_outs)
-
-        tag_out, dep_out = self.scale_tag(bert_out), self.scale_dep(bert_out)
+        tag_out = self.scale_tag(bert_out)
+        dep_out = self.scale_dep(bert_out)
         tag_score = self.tag_mlp(tag_out)
         tag_probs = F.softmax(tag_score, dim=-1)
         tag_embed = torch.matmul(tag_probs, self.tag_embedding)
@@ -95,9 +91,7 @@ class ParserModel(nn.Module):
         self.model = model
 
     def forward(self, bert_ids, bert_lens, bert_mask):
-        mask = bert_lens.ne(0)
-        if not self.training:
-            self.bert.bert.eval()
+        mask = bert_lens.gt(0)
         bert_embed = self.bert(bert_ids, bert_lens, bert_mask)
         tag_score, arc_score, lbl_score = self.model(bert_embed, mask)
         return tag_score, arc_score, lbl_score

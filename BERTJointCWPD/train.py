@@ -40,8 +40,8 @@ if __name__ == '__main__':
     if torch.cuda.is_available() and args.cuda >= 0:
         args.device = torch.device('cuda', args.cuda)
         torch.cuda.empty_cache()
-        if torch.cuda.device_count() > 1:
-            parser_model = nn.DataParallel(parser_model, device_ids=list(range(torch.cuda.device_count() // 2)))
+        # if torch.cuda.device_count() > 1:
+        #     parser_model = nn.DataParallel(parser_model, device_ids=list(range(torch.cuda.device_count() // 2)))
     else:
         args.device = torch.device('cpu')
 
@@ -49,6 +49,7 @@ if __name__ == '__main__':
     parser_model = parser_model.to(args.device)
     biff_parser = BiaffineParser(parser_model)
     biff_parser.summary()
+    print('模型参数量：', sum(p.numel() for p in parser_model.parameters() if p.requires_grad))
 
     biff_parser.train(train_data, dev_data, test_data, args, dep_vocab)
 

@@ -40,25 +40,25 @@ class SelfAttention(nn.Module):
         if att_mask is not None:
             att_score = att_score.masked_fill(att_mask, -1e9)  # float('-inf')
 
-        x = att_score.new_full(att_score.shape, -1e9, requires_grad=False)
-        fw_mask = x.tril(diagonal=-1)  # 下三角矩阵
-        bw_mask = x.triu(diagonal=1)  # 上三角矩阵
-        fw_att_score = att_score + fw_mask
-        bw_att_score = att_score + bw_mask
+        # x = att_score.new_full(att_score.shape, -1e9, requires_grad=False)
+        # fw_mask = x.tril(diagonal=-1)  # 下三角矩阵
+        # bw_mask = x.triu(diagonal=1)  # 上三角矩阵
+        # fw_att_score = att_score + fw_mask
+        # bw_att_score = att_score + bw_mask
 
         # [bz, len_q, len_k]
-        # soft_att_weights = self.softmax(att_score)
-        soft_fw_att_weights = self.softmax(fw_att_score)
-        soft_bw_att_weights = self.softmax(bw_att_score)
+        soft_att_weights = self.softmax(att_score)
+        # soft_fw_att_weights = self.softmax(fw_att_score)
+        # soft_bw_att_weights = self.softmax(bw_att_score)
 
         if self.training:
-            # soft_att_weights = self._dropout(soft_att_weights)
-            soft_fw_att_weights = self._dropout(soft_fw_att_weights)
-            soft_bw_att_weights = self._dropout(soft_bw_att_weights)
+            soft_att_weights = self._dropout(soft_att_weights)
+            # soft_fw_att_weights = self._dropout(soft_fw_att_weights)
+            # soft_bw_att_weights = self._dropout(soft_bw_att_weights)
 
         # [bz, len_q, len_k] * [bz, len_v, V] -> [bz, len_q, V]
-        # att_out = torch.matmul(soft_att_weights, v)
-        att_out = torch.matmul(soft_fw_att_weights, v) + torch.matmul(soft_bw_att_weights, v)
+        att_out = torch.matmul(soft_att_weights, v)
+        # att_out = torch.matmul(soft_fw_att_weights, v) + torch.matmul(soft_bw_att_weights, v)
         return att_out
 
 
@@ -259,7 +259,3 @@ class TransformerEncoder(nn.Module):
 
         return encoder_out, all_enc_outs
 
-
-if __name__ == '__main__':
-    pe = PositionEncoding(10, 100, pad_idx=0)
-    print(pe[:2])

@@ -68,6 +68,7 @@ class ParserModel(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        nn.init.xavier_uniform_(self.tag_mlp.weight)
         nn.init.xavier_uniform_(self.char_embedding.weight)
         nn.init.xavier_uniform_(self.bichar_embedding.weight)
         nn.init.xavier_uniform_(self.tag_embedding)

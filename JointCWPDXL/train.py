@@ -45,8 +45,7 @@ if __name__ == '__main__':
         args.device = torch.device('cpu')
 
     parser_model = parser_model.to(args.device)
-    print('模型参数量：', sum(p.numel() for p in parser_model.parameters()))
-    print('模型参数量：', sum(p.nelement() for p in parser_model.parameters()))
+    print('模型参数量：', sum(p.numel() for p in parser_model.parameters() if p.requires_grad))
 
     biff_parser = JointDParser(parser_model)
     biff_parser.summary()

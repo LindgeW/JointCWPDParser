@@ -4,9 +4,7 @@ from typing import List
 
 # 计算F1值
 def calc_f1(num_gold, num_pred, num_correct, eps=1e-10):
-    precision = num_correct / num_pred
-    recall = num_correct / num_gold
-    f1 = (2. * precision * recall) / (precision + recall + eps)
+    f1 = (2. * num_correct) / (num_pred + num_gold + eps)
     return f1
 
 
@@ -147,17 +145,5 @@ def parser_metric(gold_seg_lst: List, pred_seg_lst: List):
 
     return nb_gold_arcs, nb_pred_arcs, nb_arc_correct, nb_rel_correct
 
-
-from pprint import pprint
-if __name__ == '__main__':
-    # tag_lst = 'NR#b xxx NR#b xxx NR#m NR#m NR#e NR#m NR#m NR#e DEG#b NR#m NN#b NN#e tooy NR#s DEG#s NN#s NR#b NR#e NR#b'.split(' ')
-    tag_lst = 'NR#s xxx NR#b NR#m NR#m NR#m NR#e NR#s DEG#s NR#b NR#m NR#e NR#e NR#s NR#b NR#s'.split(' ')
-    # tag_lst = 'NR#b NR#b NR#b xxx NR#i NR#b NR#i NR#b NR#b NR#i DEG#b NR#i NN#b NN#i NR#i DEG#i NN#i xxx NR#b NR#i NR#b NR#i'.split(' ')
-
-    print(len(tag_lst))
-    deps = [Dependency(sid=i, form='OK', head=i, dep_rel='OK', tag=tag) for i, tag in enumerate(tag_lst)]
-    # wd_deps = cws_from_postag_bi(deps)
-    wd_deps = cws_from_postag(deps)
-    pprint(wd_deps)
 
 

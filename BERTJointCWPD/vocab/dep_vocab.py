@@ -67,6 +67,9 @@ class DepVocab(object):
                     self._tag2idx[self.padding] = len(self._tag2idx)
                 if self.root_rel is not None:
                     self._tag2idx[self.root_rel] = len(self._tag2idx)
+                if self.unknown is not None:
+                    self._tag2idx[self.unknown] = len(self._tag2idx)
+
             for tag in self.tag_counter.keys():
                 if tag not in self._tag2idx:
                     self._tag2idx[tag] = len(self._tag2idx)

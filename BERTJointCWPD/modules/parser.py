@@ -18,6 +18,7 @@ class Optimizer(object):
         # self.optimizer = optim.Adam(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps)
         self.optimizer = AdamW(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps, weight_decay=args.weight_decay)
 
+        lr_scheduler = None
         if args.scheduler == 'cosine':
             lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=args.max_step, eta_min=1e-6)
         elif args.scheduler == 'exponent':
@@ -33,23 +34,26 @@ class Optimizer(object):
                     return 1. / (step ** 0.5) if step > args.warmup_step else step / (args.warmup_step ** 1.5)
 
             lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-        else:
+        elif args.scheduler == 'linear':
             lr_scheduler = WarmupLinearSchedule(self.optimizer, warmup_steps=args.warmup_step, t_total=args.max_step)
+        else:
+            pass
 
         self.lr_scheduler = lr_scheduler
 
     def step(self):
         self.optimizer.step()
 
-        self.train_step += 1
-        if self.args.scheduler in ['cosine', 'const', 'exponent']:
-            if self.train_step < self.args.warmup_step:
-                curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
-                self.optimizer.param_groups[0]['lr'] = curr_lr
+        if self.lr_scheduler is not None:
+            self.train_step += 1
+            if self.args.scheduler in ['cosine', 'exponent']:
+                if self.train_step < self.args.warmup_step:
+                    curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
+                    self.optimizer.param_groups[0]['lr'] = curr_lr
+                else:
+                    self.lr_scheduler.step(self.train_step)
             else:
                 self.lr_scheduler.step(self.train_step)
-        else:
-            self.lr_scheduler.step(self.train_step)
 
         self.optimizer.zero_grad()
 
@@ -111,7 +115,8 @@ class BiaffineParser(object):
             (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
             tag_score, arc_score, rel_score = self.parser_model(bert_ids, bert_lens, bert_mask)
 
-            tag_loss = self.calc_tag_loss(tag_score, true_tags, bert_lens.gt(0))
+            # tag_loss = self.calc_tag_loss(tag_score, true_tags, bert_lens.gt(0))
+            tag_loss = self.parser_model.tag_loss(tag_score, true_tags, bert_lens.gt(0))
             dep_loss = self.calc_dep_loss(arc_score, rel_score, true_heads, true_rels, bert_lens.gt(0))
             loss = tag_loss + dep_loss
             if args.update_steps > 1:
@@ -145,6 +150,7 @@ class BiaffineParser(object):
     # 训练多次
     def train(self, train_data, dev_data, test_data, args, vocab):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size*args.update_steps))
+        # args.warmup_step = args.max_step // 2
         print('max step:', args.max_step)
         optimizer = Optimizer(filter(lambda p: p.requires_grad, self.parser_model.parameters()), args)
 
@@ -197,9 +203,8 @@ class BiaffineParser(object):
                 (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
                 tag_score, arc_score, rel_score = self.parser_model(bert_ids, bert_lens, bert_mask)
 
+                # pred_tags = tag_score.data.argmax(dim=-1)
                 pred_tags = self.parser_model.tag_decode(tag_score, bert_lens.gt(0))
-                # 多GPU训练
-                # pred_tags = self.parser_model.module.tag_decode(tag_score, bert_lens.gt(0))
                 pred_heads, pred_rels = self.decode(arc_score, rel_score, bert_lens.gt(0))
                 for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, vocab)):
                     gold_seg_lst = cws_from_tag(batch_data[i])
