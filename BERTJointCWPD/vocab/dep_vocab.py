@@ -142,16 +142,16 @@ class DepVocab(object):
     @_check_build_bert_vocab
     def tag2index(self, tag):
         if isinstance(tag, list):
-            return [self._tag2idx.get(p) for p in tag]
+            return [self._tag2idx.get(p, self._tag2idx[self.unknown]) for p in tag]
         else:
-            return self._tag2idx.get(tag)
+            return self._tag2idx.get(tag, self._tag2idx[self.unknown])
 
     @_check_build_bert_vocab
     def index2tag(self, idxs):
         if isinstance(idxs, list):
-            return [self._idx2tag.get(i) for i in idxs]
+            return [self._idx2tag.get(i, self.unknown) for i in idxs]
         else:
-            return self._idx2tag.get(idxs)
+            return self._idx2tag.get(idxs, self.unknown)
 
     @_check_build_bert_vocab
     def rel2index(self, rels):
