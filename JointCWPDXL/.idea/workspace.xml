@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a98abff8-5763-4e9a-91d3-89d2edde73ac" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../BERTJointCWPD/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/../BERTJointCWPD/vocab/dep_vocab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/vocab/dep_vocab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/BertModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/BertModel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/vocab/dep_vocab.py" afterDir="false" />
-    </list>
+    <list default="true" id="a98abff8-5763-4e9a-91d3-89d2edde73ac" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,12 +217,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1597045051473</updated>
-      <workItem from="1597045052991" duration="7935000" />
+      <workItem from="1597045052991" duration="8088000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7935000" />
+    <option name="totallyTimeSpent" value="8088000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />

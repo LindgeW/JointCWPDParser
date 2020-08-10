@@ -11,7 +11,6 @@ class BertEmbedding(nn.Module):
         self.nb_layers = nb_layers if nb_layers < self.bert_layers else self.bert_layers
         self.hidden_size = self.bert.config.hidden_size
         # self.proj = nn.Linear(in_features=self.hidden_size, out_features=out_dim)
-        # self.projs = nn.ModuleList([NonlinearMLP(self.hidden_size, out_dim, bias=False) for _ in range(self.nb_layers)])
         self.projs = nn.ModuleList([nn.Linear(self.hidden_size, out_dim) for _ in range(self.nb_layers)])
 
     def forward(self, bert_ids, bert_lens, bert_mask):
@@ -40,7 +39,7 @@ class BertEmbedding(nn.Module):
         return proj_hiddens
 
         # 根据bert piece长度切分
-        # bert_out = all_enc_outs[-1:]
+        # bert_out = all_enc_outs[-1]
         # bert_chunks = bert_out[bert_mask].split(bert_lens[mask].tolist())
         # bert_out = torch.stack(tuple([bc.mean(0) for bc in bert_chunks]))
         # bert_embed = bert_out.new_zeros(bz, seq_len, self.hidden_size)

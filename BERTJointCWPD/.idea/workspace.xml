@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a7248c2d-70f2-4904-a3ff-f709dd76a474" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/vocab/dep_vocab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../JointCWPDXL/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/../JointCWPDXL/vocab/dep_vocab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/BertModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/modules/BertModel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../TuneBertJointCWPD/vocab/dep_vocab.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TuneBertJointCWPD/vocab/dep_vocab.py" afterDir="false" />
-    </list>
+    <list default="true" id="a7248c2d-70f2-4904-a3ff-f709dd76a474" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
