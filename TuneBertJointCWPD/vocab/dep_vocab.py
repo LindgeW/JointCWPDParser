@@ -3,6 +3,7 @@ from datautil.dependency import read_deps
 from collections import Counter
 from functools import wraps
 from transformers import BertTokenizer
+import pickle
 
 
 def create_vocab(data_path, bert_vocab_path):
@@ -73,6 +74,7 @@ class DepVocab(object):
                 if tag not in self._tag2idx:
                     self._tag2idx[tag] = len(self._tag2idx)
             self._idx2tag = dict((idx, tag) for tag, idx in self._tag2idx.items())
+            del self.tag_counter
 
         if self.rel_counter is not None:
             if self._rel2idx is None:
@@ -81,17 +83,16 @@ class DepVocab(object):
                     self._rel2idx[self.padding] = len(self._rel2idx)
                 if self.root_rel is not None:
                     self._rel2idx[self.root_rel] = len(self._rel2idx)
+
             for rel in self.rel_counter.keys():
                 if rel not in self._rel2idx:
                     self._rel2idx[rel] = len(self._rel2idx)
             self._idx2rel = dict((idx, rel) for rel, idx in self._rel2idx.items())
+            del self.rel_counter
 
         if self.bert_tokenizer is None and self.bert_vocab is not None:
             self.bert_tokenizer = BertTokenizer.from_pretrained(self.bert_vocab)
             print("Load bert vocabulary finished !!!")
-            self.key_words = {'sep': self.bert_tokenizer.sep_token, 'cls': self.bert_tokenizer.cls_token,
-                              'pad': self.bert_tokenizer.pad_token, 'unk': self.bert_tokenizer.unk_token,
-                              'mask': self.bert_tokenizer.mask_token}
         return self
 
     @_check_build_bert_vocab
@@ -103,11 +104,11 @@ class DepVocab(object):
         bert_ids, bert_lens = [], []
         tokenizer = self.bert_tokenizer
 
-        cls_tokens = [self.key_words['cls']] + tokens
+        cls_tokens = [tokenizer.cls_token] + tokens
         bert_piece_ids = map(transform, cls_tokens)
         for piece in bert_piece_ids:
             if not piece:
-                piece = [0]
+                piece = transform(tokenizer.pad_token)
             bert_ids.extend(piece)
             bert_lens.append(len(piece))
         bert_mask = [1] * len(bert_ids)
@@ -133,18 +134,23 @@ class DepVocab(object):
     #     return bert_ids, bert_lens, bert_mask
 
     @_check_build_bert_vocab
+    def save(self, path):
+        with open(path, 'wb') as fw:
+            pickle.dump(self, fw)
+
+    @_check_build_bert_vocab
     def tag2index(self, tag):
         if isinstance(tag, list):
-            return [self._tag2idx.get(p) for p in tag]
+            return [self._tag2idx.get(p, self._tag2idx[self.unknown]) for p in tag]
         else:
-            return self._tag2idx.get(tag)
+            return self._tag2idx.get(tag, self._tag2idx[self.unknown])
 
     @_check_build_bert_vocab
     def index2tag(self, idxs):
         if isinstance(idxs, list):
-            return [self._idx2tag.get(i) for i in idxs]
+            return [self._idx2tag.get(i, self.unknown) for i in idxs]
         else:
-            return self._idx2tag.get(idxs)
+            return self._idx2tag.get(idxs, self.unknown)
 
     @_check_build_bert_vocab
     def rel2index(self, rels):

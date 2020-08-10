@@ -21,27 +21,26 @@ class BertEmbedding(nn.Module):
         :param bert_mask: (bz, bep_seq_len)  经过bpe切词
         :return:
         '''
+        bz, seq_len = bert_lens.shape
+        mask = bert_lens.gt(0)
+
         _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
-        bert_outs = all_enc_outs[-self.nb_layers:]  # 末层bert作为输出
+        bert_outs = all_enc_outs[-self.nb_layers:]
 
         proj_hiddens = []
-        for i, bout in enumerate(bert_outs):
-            proj_hiddens.append(self.projs[i](bout))
+        for i, bert_out in enumerate(bert_outs):
+            # 根据bert piece长度切分
+            bert_chunks = bert_out[bert_mask].split(bert_lens[mask].tolist())
+            bert_out = torch.stack(tuple([bc.mean(0) for bc in bert_chunks]))
+            bert_embed = bert_out.new_zeros(bz, seq_len, self.hidden_size)
+            # 将bert_embed中mask对应1的位置替换成bert_out，0的位置不变
+            bert_embed_ = bert_embed.masked_scatter_(mask.unsqueeze(dim=-1), bert_out)
+            proj_hiddens.append(self.projs[i](bert_embed_))
 
-        # bz, seq_len = bert_lens.shape
-        # mask = bert_lens.gt(0)
-        # proj_hiddens = []
-        # for i, bert_out in enumerate(bert_outs):
-        #     # 根据bert piece长度切分
-        #     bert_chunks = bert_out[bert_mask].split(bert_lens[mask].tolist())
-        #     bert_out = torch.stack(tuple([bc.mean(0) for bc in bert_chunks]))
-        #     bert_embed = bert_out.new_zeros(bz, seq_len, self.hidden_size)
-        #     # 将bert_embed中mask对应1的位置替换成bert_out，0的位置不变
-        #     bert_embed_ = bert_embed.masked_scatter_(mask.unsqueeze(dim=-1), bert_out)
-        #     # proj_hiddens.append(self.projs[i](bert_embed_))
-        #     proj_hiddens.append(bert_embed_)
+        return proj_hiddens
 
         # 根据bert piece长度切分
+        # bert_out = all_enc_outs[-1:]
         # bert_chunks = bert_out[bert_mask].split(bert_lens[mask].tolist())
         # bert_out = torch.stack(tuple([bc.mean(0) for bc in bert_chunks]))
         # bert_embed = bert_out.new_zeros(bz, seq_len, self.hidden_size)
@@ -49,6 +48,6 @@ class BertEmbedding(nn.Module):
         # bert_embed = bert_embed.masked_scatter_(mask.unsqueeze(dim=-1), bert_out)
         # return self.proj(bert_embed)
 
-        return proj_hiddens
+
 
 
