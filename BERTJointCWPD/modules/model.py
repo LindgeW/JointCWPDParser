@@ -37,8 +37,10 @@ class ParserModel(nn.Module):
                                             n_layer=args.encoder_layer,
                                             dropout=args.att_drop)
 
-        self.scale = ScalarMix(mixture_size=args.encoder_layer+1)
-        self.tag_embedding = nn.Parameter(torch.randn(args.tag_size, args.tag_embed_dim))
+        self.scale_tag = ScalarMix(mixture_size=args.encoder_layer + 1)
+        self.scale_dep = ScalarMix(mixture_size=args.encoder_layer + 1)
+
+        self.tag_embedding = nn.Parameter(torch.zeros(args.tag_size, args.tag_embed_dim))
         self.tag_mlp = nn.Linear(in_features=args.d_model, out_features=args.tag_size)
         self.tag_crf = CRF(num_tags=args.tag_size, batch_first=True)
 
@@ -75,13 +77,14 @@ class ParserModel(nn.Module):
         # enc_out = self.bilstm(bert_embed, mask)
         # last_out, enc_outs = self.transformer(bert_embed, mask)
         last_out, enc_outs = self.transformer_xl(bert_embed, mask)
-        enc_out = self.scale(enc_outs)
+        enc_out_tag = self.scale_tag(enc_outs)
+        enc_out_dep = self.scale_dep(enc_outs)
 
-        tag_score = self.tag_mlp(enc_out)
+        tag_score = self.tag_mlp(enc_out_tag)
         tag_probs = F.softmax(tag_score, dim=-1)
         tag_embed = torch.matmul(tag_probs, self.tag_embedding)
 
-        dep_embed = torch.cat((enc_out, tag_embed), dim=-1).contiguous()
+        dep_embed = torch.cat((enc_out_dep, tag_embed), dim=-1).contiguous()
         if self.training:
             dep_embed = timestep_dropout(dep_embed, self.args.embed_drop)
 
