@@ -1,6 +1,8 @@
 
 Paper: [Deep Graph-Based Character-Level Chinese Dependency Parsing](https://ieeexplore.ieee.org/document/9381612)
 
+
+Please cite the following paper:
 ```
 @ARTICLE{wu2021char,  
 author={Wu, Linzhi and Zhang, Meishan},  
