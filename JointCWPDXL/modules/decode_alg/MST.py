@@ -3,7 +3,6 @@ import numpy as np
 from collections import defaultdict
 
 
-# 贪心解码
 def greedy_decode(arc_matrix, mask=None):
     '''
     :param arc_matrix: (bz, seq_len, seq_len)
@@ -68,7 +67,7 @@ def _mst(scores, eps=1e-10):
         heads[new_root] = 0
 
     edges = defaultdict(set)
-    vertices = set((0,))
+    vertices = {0}
     for dep, head in enumerate(heads[tokens]):
         vertices.add(dep + 1)
         edges[head].add(dep + 1)

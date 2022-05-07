@@ -75,5 +75,3 @@ def batch_variable(batch_data, char_vocab, bichar_vocab, device=torch.device('cp
     extngram_idxs = extunigram_idxs, extbigram_idxs
 
     return ngram_idxs, extngram_idxs, tag_idxs, head_idx, rel_idx, non_pad_mask
-
-

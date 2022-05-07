@@ -13,9 +13,7 @@ from torch.nn.utils.rnn import pad_sequence
 class ParserModel(nn.Module):
     def __init__(self, args, char_embed_weights=None, bichar_embed_weights=None):
         super(ParserModel, self).__init__()
-
         self.args = args
-
         self.char_embedding = nn.Embedding(num_embeddings=args.char_vocab_size,
                                            embedding_dim=args.char_embed_dim,
                                            padding_idx=0)
@@ -64,7 +62,6 @@ class ParserModel(nn.Module):
 
         self.arc_biaffine = Biaffine(args.arc_mlp_size, 1, bias=(True, False))
         self.label_biaffine = Biaffine(args.label_mlp_size, args.rel_size, bias=(True, True))
-
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -125,4 +122,3 @@ class ParserModel(nn.Module):
         # return best segment tags
         best_tag_seq = self.tag_crf.decode(tag_emissions, mask=char_mask)
         return pad_sequence(best_tag_seq, batch_first=True, padding_value=0)
-

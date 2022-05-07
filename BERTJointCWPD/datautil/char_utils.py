@@ -144,4 +144,3 @@ def parser_metric(gold_seg_lst: List, pred_seg_lst: List):
                 break
 
     return nb_gold_arcs, nb_pred_arcs, nb_arc_correct, nb_rel_correct
-

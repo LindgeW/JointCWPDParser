@@ -2,7 +2,6 @@ from typing import List
 from pprint import pprint
 
 
-# ID FORM LEMMA CPOSTAG POSTAG FEATS HEAD DEPREL PHEAD PDEPREL
 class DepNode(object):
     def __init__(self, id,
                  form,

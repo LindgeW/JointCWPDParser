@@ -11,9 +11,7 @@ from torch.nn.utils.rnn import pad_sequence
 class ParserModel(nn.Module):
     def __init__(self, args, bert_embedding=None):
         super(ParserModel, self).__init__()
-
         self.args = args
-
         self.bert_embedding = bert_embedding
 
         # self.bilstm = BiLSTMEncoder(input_size=args.d_model,
@@ -113,4 +111,3 @@ class ParserModel(nn.Module):
         # return best segment tags
         best_tag_seq = self.tag_crf.decode(tag_emissions, mask=char_mask)
         return pad_sequence(best_tag_seq, batch_first=True, padding_value=0)
-

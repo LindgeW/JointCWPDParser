@@ -4,7 +4,6 @@ Source: https://github.com/chantera/biaffineparser/blob/master/utils.py.
 import numpy as np
 from collections import defaultdict
 
-
 def mst(scores, eps=1e-10):
     """
     Chu-Liu-Edmonds' algorithm for finding minimum spanning arborescence in graphs.

@@ -69,17 +69,13 @@ class Biaffine(nn.Module):
 
         # (bz, len1, dim1+1) -> (bz, len1, linear_output_size)
         affine = self.linear(input1)
-
         # (bz, len1 * self.out_features, dim2)
         affine = affine.reshape(batch_size, len1 * self.out_features, -1)
-
         # (bz, len1 * out_features, dim2) * (bz, dim2, len2)
         # -> (bz, len1 * out_features, len2) -> (bz, len2, len1 * out_features)
         biaffine = torch.bmm(affine, input2.transpose(1, 2)).transpose(1, 2)
-
         # (bz, len2, len1, out_features)    # out_features: 1 or rel_size
         biaffine = biaffine.reshape((batch_size, len2, len1, -1)).squeeze(-1)
-
         return biaffine
 
 

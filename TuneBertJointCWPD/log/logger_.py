@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-
 # 日志级别关系映射
 level_dict = {
     'debug': logging.DEBUG,

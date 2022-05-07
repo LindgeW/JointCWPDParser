@@ -20,7 +20,6 @@ class BiaffineParser(object):
     def summary(self):
         logger.info(self.parser_model)
 
-    # 训练一次
     def train_iter(self, train_data, args, vocab, optimizer):
         self.parser_model.train()
         train_loss = 0
@@ -31,7 +30,6 @@ class BiaffineParser(object):
             # batcher = (x.to(args.device) for x in batcher)
             (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
             tag_score, arc_score, rel_score = self.parser_model(bert_ids, bert_lens, bert_mask)
-
             # tag_loss = self.calc_tag_loss(tag_score, true_tags, bert_lens.gt(0))
             tag_loss = self.parser_model.tag_loss(tag_score, true_tags, bert_lens.gt(0))
             dep_loss = self.calc_dep_loss(arc_score, rel_score, true_heads, true_rels, bert_lens.gt(0))
@@ -63,7 +61,6 @@ class BiaffineParser(object):
         REL = all_rel_acc * 100. / all_arcs
         return train_loss, ARC, REL
 
-    # 训练多次
     def train(self, train_data, dev_data, test_data, args, vocab):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size*args.update_steps))
         # args.warmup_step = args.max_step // 2
@@ -107,7 +104,6 @@ class BiaffineParser(object):
 
     def evaluate(self, test_data, args, vocab):
         self.parser_model.eval()
-
         all_gold_seg, all_pred_seg, all_seg_correct = 0, 0, 0
         all_gold_tag, all_pred_tag, all_tag_correct = 0, 0, 0
         all_gold_arc, all_pred_arc, all_arc_correct, all_rel_correct = 0, 0, 0, 0

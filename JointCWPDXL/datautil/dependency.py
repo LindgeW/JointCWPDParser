@@ -42,6 +42,8 @@ class Dependency(object):
         self.head = head    # 当前词的head (ROOT为0)
         self.dep_rel = dep_rel  # 当前词与head之间的依存关系
 
-    def __repr__(self):
+    def __str__(self):
         return str(self.id) + '\t' + self.form + '\t' + self.tag + '\t' + str(self.head) + '\t' + self.dep_rel
 
+    def __repr__(self):
+        return str(self.__dict__)

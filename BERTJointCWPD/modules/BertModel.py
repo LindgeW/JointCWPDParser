@@ -33,9 +33,6 @@ class BertEmbedding(nn.Module):
         bz, seq_len = bert_lens.shape
         mask = bert_lens.gt(0)
 
-        if not self.requires_grad:
-            self.bert.eval()
-
         with torch.no_grad():
             _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
             # _, _, all_enc_outs = self.bert_util(bert_ids)

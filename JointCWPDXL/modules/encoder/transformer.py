@@ -256,6 +256,4 @@ class TransformerEncoder(nn.Module):
             # [bz, len_q, d_model]
             encoder_out = encoder(encoder_out, att_mask=att_mask, seq_mask=seq_mask)
             all_enc_outs.append(encoder_out)
-
         return encoder_out, all_enc_outs
-

@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-
 # PE(pos, 2i) = sin(pos/10000^(2i/d_model))
 # PE(pos, 2i+1) = cos(pos/10000^(2i/d_model))
 def PositionEncoding(max_len, d_model, pad_idx=None):
@@ -258,4 +257,3 @@ class TransformerEncoder(nn.Module):
             all_enc_outs.append(encoder_out)
 
         return encoder_out, all_enc_outs
-

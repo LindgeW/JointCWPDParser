@@ -238,9 +238,3 @@ class RNNEncoder(nn.Module):
 
         return output, hidden
 
-
-if __name__ == '__main__':
-    rnn = RNNEncoder(input_size=100, hidden_size=50, num_layers=4, bidirectional=True)
-    x = torch.randn(3, 10, 100)
-    print(rnn(x)[0])
-

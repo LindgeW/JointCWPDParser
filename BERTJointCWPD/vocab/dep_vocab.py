@@ -176,4 +176,3 @@ class DepVocab(object):
     @_check_build_bert_vocab
     def rel_size(self):
         return len(self._rel2idx)
-

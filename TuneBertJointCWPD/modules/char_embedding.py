@@ -2,17 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn
 import torch.nn.functional as F
-'''
-1、根据词表建立字符表
-2、构建词索引到字符索引buffer
-3、建立词索引到词长度buffer
-'''
+
+
 class CharCNNEmbedding(nn.Module):
     def __init__(self, vocab, embed_size=50, char_embed_dim=50, include_word_start_end=True):
         super(CharCNNEmbedding, self).__init__()
         # 根据词表建立字符表
         char_vocab = vocab.build_char_vocab(include_word_start_end=include_word_start_end)
-
         # 字典中最大词长
         max_wd_len = max(map(lambda wd: len(wd[0]), vocab))
         if include_word_start_end:

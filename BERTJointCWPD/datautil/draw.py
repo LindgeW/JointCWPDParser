@@ -8,7 +8,6 @@ def test1():
     dep = np.array([[0.5591347217559814, -2.310115337371826, -2.024622917175293, -1.4636127948760986, 0.6141133904457092, 0.8987528085708618, -0.6187851428985596]])
     tag_ = F.softmax(torch.from_numpy(tag), dim=1)
     dep_ = F.softmax(torch.from_numpy(dep), dim=1)
-
     ax1 = plt.subplot(211)
     plt.tight_layout()
     plt.subplots_adjust(wspace=0, hspace=0)
@@ -42,10 +41,8 @@ def test1():
 def test2():
     tune_tag = np.array([[-0.3287504017353058, -0.43384358286857605, -0.6369794607162476, -0.7293740510940552, -0.045044273138046265, 0.5225287079811096, 0.6732711791992188]])
     tune_dep = np.array([[-0.33941972255706787, -0.24522434175014496, 0.1323101967573166, 0.3380222022533417, 0.2715478837490082, 0.05004581809043884, -0.10043632239103317]])
-
     tag_ = F.softmax(torch.from_numpy(tune_tag), dim=1)
     dep_ = F.softmax(torch.from_numpy(tune_dep), dim=1)
-
     fig, axes = plt.subplots(2, 1)
     plt.subplots_adjust(wspace=0, hspace=0)
     fig.tight_layout()

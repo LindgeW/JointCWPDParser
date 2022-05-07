@@ -1,5 +1,4 @@
 from typing import List
-
 import torch
 from torch.nn import Module, ParameterList, Parameter
 import torch.nn.functional as F
@@ -64,7 +63,6 @@ class ScalarMix(Module):
             broadcast_mask = mask_float.unsqueeze(-1)
             input_dim = tensors[0].size(-1)
             num_elements_not_masked = torch.sum(mask_float) * input_dim
-
             pieces = []
             for weight, tensor in zip(normed_weights, tensors):
                 pieces.append(weight * _do_layer_norm(tensor,

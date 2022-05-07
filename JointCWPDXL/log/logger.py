@@ -63,8 +63,3 @@ class MyLogger(object):
 
         return logger
 
-
-if __name__ == '__main__':
-    logger = MyLogger('log_config.json').get_logger(log_path='../log/xx.log')
-    logger.info('正在执行。。。')
-    print(__name__)

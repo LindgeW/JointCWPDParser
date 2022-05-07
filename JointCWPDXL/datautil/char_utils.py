@@ -158,6 +158,3 @@ def idx_head_in_wd(ch_deps: List[Dependency]):
             head_ch = cd.id - b
             break
     return head_ch
-
-
-

@@ -69,7 +69,6 @@ class BiLSTMEncoder(nn.Module):
                  bidirectional=True,
                  batch_first=True):
         super(BiLSTMEncoder, self).__init__()
-
         self.bilstm = nn.LSTM(input_size=input_size,
                               hidden_size=hidden_size,
                               num_layers=num_layers,
@@ -92,5 +91,4 @@ class BiLSTMEncoder(nn.Module):
         pack_enc_out, _ = self.bilstm(pack_embed)
         enc_out, _ = pad_packed_sequence(pack_enc_out, batch_first=True)
         _, unsort_idxs = torch.sort(sort_idxs, dim=0, descending=False)
-
         return enc_out[unsort_idxs]

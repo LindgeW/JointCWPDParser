@@ -284,9 +284,3 @@ def show_bar2(atts):
     # heatmap.set_xticklabels(['a', 'b', 'c', 'd'])
     # heatmap.set_yticklabels(['天', '津', '大', '学'])
     plt.show()
-
-if __name__ == '__main__':
-    pe = PositionEncoding(50, 100)
-    # print(pe[:2])
-    # show_bar(pe)
-    show_bar2(pe)

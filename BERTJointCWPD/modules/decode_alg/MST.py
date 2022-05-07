@@ -79,7 +79,6 @@ def _mst(scores, eps=1e-10):
         heads[changed_cycle] = new_head
         edges[new_head].add(changed_cycle)
         edges[old_head].remove(changed_cycle)
-
     return heads
 
 

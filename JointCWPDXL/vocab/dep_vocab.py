@@ -64,7 +64,6 @@ class DepVocab(object):
         self.root_form = '<'+root_rel.lower()+'>'
         self.padding = padding
         self.unknown = unknown
-
         self._word2idx = None
         self._idx2wd = None
         self._extwd2idx = None
@@ -276,7 +275,3 @@ class DepVocab(object):
             return self._word2idx.get(item)
         if self.unknown is not None:
             return self._word2idx[self.unknown]
-
-
-
-

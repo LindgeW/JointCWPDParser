@@ -8,7 +8,6 @@ import pickle
 
 def create_vocab(data_path, bert_vocab_path):
     assert os.path.exists(data_path)
-
     root_rel = ''
     tag_counter, rel_counter = Counter(), Counter()
     with open(data_path, 'r', encoding='utf-8') as fr:
@@ -22,7 +21,6 @@ def create_vocab(data_path, bert_vocab_path):
                     rel_counter[dep.dep_rel] += 1
                 elif root_rel != dep.dep_rel:
                     print('root = ' + root_rel + ', rel for root = ' + dep.dep_rel)
-
     return DepVocab(bert_vocab_path, tag_counter, rel_counter, root_rel)
 
 
@@ -103,7 +101,6 @@ class DepVocab(object):
 
         bert_ids, bert_lens = [], []
         tokenizer = self.bert_tokenizer
-
         cls_tokens = [tokenizer.cls_token] + tokens
         bert_piece_ids = map(transform, cls_tokens)
         for piece in bert_piece_ids:

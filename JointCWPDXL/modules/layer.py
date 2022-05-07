@@ -284,7 +284,6 @@ class AdditiveAttention(nn.Module):
 
 
 # multiplicative attention
-# 普通版
 class DotProductAttention(nn.Module):
     def __init__(self, k_dim, dropout=0.1):
         super(DotProductAttention, self).__init__()
@@ -317,7 +316,6 @@ class DotProductAttention(nn.Module):
         return att_out
 
 
-# 添加门机制
 class GateDotProductAttention(nn.Module):
     def __init__(self, k_dim, dropout=0.1):
         super(GateDotProductAttention, self).__init__()
@@ -374,7 +372,6 @@ class GateDotProductAttention(nn.Module):
         fw_v = fw_gate * fw_v + (1 - fw_gate) * v
         bw_v = bw_gate * bw_v + (1 - bw_gate) * v
         att_out = torch.cat((fw_v, bw_v), dim=-1).contiguous()
-
         return att_out
 
 
@@ -430,5 +427,3 @@ class LocalDotProductAttention(nn.Module):
 
         fusion_out = self._fusion_gate(global_att_out, local_att_out, q)
         return fusion_out
-
-

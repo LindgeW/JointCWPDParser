@@ -214,5 +214,4 @@ class TransformerEncoder(nn.Module):
             encoder_out = encoder(encoder_out, att_mask=att_mask)
 
         encoder_out = self.norm_out(encoder_out)
-
         return encoder_out

@@ -56,3 +56,4 @@ def drop_words(wd_idxs, wd_unk_idx=1, wd_dropout=0.1):
             mask = non_pad_mask & drop_mask  # pad的位置不为unk
             wd_idxs = wd_idxs.masked_fill(mask, wd_unk_idx)
     return wd_idxs
+

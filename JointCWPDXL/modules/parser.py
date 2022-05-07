@@ -19,7 +19,6 @@ class JointDParser(object):
     def summary(self):
         logger.info(self.parser_model)
 
-    # 训练一次
     def train_iter(self, train_data, args, optimizer, *vocab):
         self.parser_model.train()
         train_loss = 0
@@ -61,7 +60,6 @@ class JointDParser(object):
         REL = all_rel_acc * 100. / all_arcs
         return train_loss, ARC, REL
 
-    # 训练多次
     def train(self, train_data, dev_data, test_data, args, *vocab):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size * args.update_steps))
         args.warmup_step = args.max_step // 2

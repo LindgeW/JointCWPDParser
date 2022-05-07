@@ -3,8 +3,6 @@ PRF、UAS、LAS
 UAS = R_udp = nb_arc / nb_arcs
 LAS = R_ldp = nb_lbl / nb_arcs
 '''
-
-
 class Metrics(object):
     def __init__(self, nb_gold=None, nb_pred=None, nb_correct=None):
         self.nb_gold = nb_gold

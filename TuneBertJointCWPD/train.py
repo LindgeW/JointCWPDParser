@@ -14,7 +14,6 @@ if __name__ == '__main__':
     torch.manual_seed(1234)
     torch.cuda.manual_seed(1344)
     torch.cuda.manual_seed_all(1344)
-
     print('cuda available:', torch.cuda.is_available())
     print('cuDnn available:', torch.backends.cudnn.enabled)
     print('GPU numbers:', torch.cuda.device_count())

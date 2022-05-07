@@ -213,7 +213,5 @@ class TransformerEncoder(nn.Module):
         for encoder in self._encoder_stack:
             # [bz, len_q, d_model]
             encoder_out = encoder(encoder_out, att_mask=att_mask)
-
         encoder_out = self.norm_out(encoder_out)
-
         return encoder_out

@@ -45,3 +45,5 @@ class Dependency(object):
     def __str__(self):
         return '\t'.join([str(self.id), self.form, self.tag, str(self.head), self.dep_rel])
 
+    def __repr__(self):
+        return str(self.__dict__)

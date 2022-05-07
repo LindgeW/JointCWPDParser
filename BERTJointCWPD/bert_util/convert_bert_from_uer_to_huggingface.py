@@ -11,9 +11,7 @@ parser.add_argument("--layers_num", type=int, default=24, help=".")
 
 args = parser.parse_args()
 path = args.input_model_path
-
 input_model = torch.load(args.input_model_path)
-
 output_model = collections.OrderedDict()
 
 output_model["bert_util.embeddings.word_embeddings.weight"] = input_model["embedding.word_embedding.weight"]
@@ -50,5 +48,4 @@ output_model["cls.predictions.transform.LayerNorm.weight"] = input_model["target
 output_model["cls.predictions.transform.LayerNorm.bias"] = input_model["target.layer_norm.beta"]
 output_model["cls.predictions.decoder.weight"] = input_model["target.mlm_linear_2.weight"]
 output_model["cls.predictions.bias"] = input_model["target.mlm_linear_2.bias"]
-
 torch.save(output_model, args.output_model_path)

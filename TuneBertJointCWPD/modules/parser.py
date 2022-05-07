@@ -8,7 +8,7 @@ from modules.decode_alg.eisner import eisner
 # from modules.decode_alg.MST import mst_decode
 from log.logger_ import logger
 from datautil.char_utils import *
-from datautil.dataloader import *
+from datautil.dataloader import batch_iter, batch_variable
 from .optimizer import AdamW, WarmupLinearSchedule
 
 
@@ -21,11 +21,7 @@ class BiaffineParser(object):
     def summary(self):
         logger.info(self.parser_model)
 
-    # 训练多次
     def train(self, train_data, dev_data, test_data, args, vocab):
-        args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size*args.update_steps))
-        # args.warmup_step = args.max_step // 10
-        print('max step:', args.max_step)
         no_decay = ['bias', 'LayerNorm.weight']
         optimizer_parameters = [
             {'params': [p for n, p in self.parser_model.bert.named_parameters()
@@ -34,7 +30,6 @@ class BiaffineParser(object):
             {'params': [p for n, p in self.parser_model.bert.named_parameters()
                         if any(nd in n for nd in no_decay) and p.requires_grad],
              'weight_decay': 0.0},
-
             {'params': [p for n, p in self.parser_model.model.named_parameters()
                         if not any(nd in n for nd in no_decay)],
             'weight_decay': args.weight_decay, 'lr': args.learning_rate},
@@ -42,6 +37,9 @@ class BiaffineParser(object):
                         if any(nd in n for nd in no_decay)],
             'weight_decay': 0.0, 'lr': args.learning_rate}
         ]
+        args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size * args.update_steps))
+        # args.warmup_step = args.max_step // 10
+        print('max step:', args.max_step)
         optimizer = AdamW(optimizer_parameters, lr=args.learning_rate, eps=args.eps)
         scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=args.max_step)
 
@@ -87,7 +85,7 @@ class BiaffineParser(object):
             rel = all_rel_acc * 100. / all_arcs
 
             dev_uas, dev_las, tag_f1, seg_f1, udep_f1, ldep_f1 = self.evaluate(dev_data, args, vocab)
-            logger.info('[Epoch %d] train loss: %.3f, lr: %f, ARC: %.2f%%, REL: %.2f%%' % (ep, train_loss, optimizer.get_lr(), arc, rel))
+            logger.info('[Epoch %d] train loss: %.3f, ARC: %.2f%%, REL: %.2f%%' % (ep, train_loss, arc, rel))
             logger.info('Dev data -- UAS: %.2f%%, LAS: %.2f%%' % (100.*dev_uas, 100.*dev_las))
             logger.info('Dev data -- TAG: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*tag_f1, 100.*seg_f1, 100.*udep_f1, 100.*ldep_f1))
 
@@ -106,7 +104,6 @@ class BiaffineParser(object):
                 test_best_udep_f1 = test_udep_f1
             if test_best_ldep_f1 < test_ldep_f1:
                 test_best_ldep_f1 = test_ldep_f1
-
             logger.info('Test data -- UAS: %.2f%%, LAS: %.2f%%' % (100.*test_uas, 100.*test_las))
             logger.info('Test data -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*test_tag_f1, 100.*test_seg_f1, 100.*test_udep_f1, 100.*test_ldep_f1))
 

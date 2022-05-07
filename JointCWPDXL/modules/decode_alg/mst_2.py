@@ -35,7 +35,7 @@ def mst(scores, eps=1e-10):
         heads[new_root] = 0
 
     edges = defaultdict(set) # head -> dep
-    vertices = set((0,))
+    vertices = {0}
     for dep, head in enumerate(heads[tokens]):
         vertices.add(dep + 1)
         edges[head].add(dep + 1)

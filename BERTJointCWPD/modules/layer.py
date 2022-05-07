@@ -6,7 +6,6 @@ import math
 class NonlinearMLP(nn.Module):
     def __init__(self, in_feature, out_feature, activation=None, bias=True):
         super(NonlinearMLP, self).__init__()
-
         if activation is None:
             self.activation = lambda x: x
         else:

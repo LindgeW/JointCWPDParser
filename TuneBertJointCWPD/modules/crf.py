@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 import torch
 import torch.nn as nn
 
@@ -23,7 +22,6 @@ class CRF(nn.Module):
             ``(num_tags,)``.
         transitions (`~torch.nn.Parameter`): Transition score tensor of size
             ``(num_tags, num_tags)``.
-
 
     .. [LMP01] Lafferty, J., McCallum, A., Pereira, F. (2001).
        "Conditional random fields: Probabilistic models for segmenting and

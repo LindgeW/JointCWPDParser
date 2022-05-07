@@ -41,8 +41,3 @@ def tsne_reduce(wds, vecs):
         plt.text(tsne_vecs[i, 0] + 0.1, tsne_vecs[i, 1] + 0.2, s=wd, fontsize=8)
     plt.savefig('./vec2.png')
     plt.show()
-
-
-if __name__ == '__main__':
-    wds, vecs = load_wd2vec('../data/giga.100.txt')
-    tsne_reduce(wds, vecs)

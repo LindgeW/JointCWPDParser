@@ -17,12 +17,9 @@ def main():
                         help=".")
 
     args = parser.parse_args()
-
     input_model = torch.load(args.input_model_path)
-
     session = tf.Session()
     output_model = collections.OrderedDict()
-
     output_model["bert_util/embeddings/word_embeddings"] = input_model["embedding.word_embedding.weight"]
     output_model["bert_util/embeddings/position_embeddings"] = input_model["embedding.position_embedding.weight"]
     output_model["bert_util/embeddings/token_type_embeddings"] = input_model["embedding.segment_embedding.weight"][1:, :]
@@ -101,4 +98,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

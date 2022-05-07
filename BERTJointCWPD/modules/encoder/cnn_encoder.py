@@ -80,4 +80,3 @@ class ConvStack(nn.Module):
 
     def forward(self, inputs):
         return self.conv_stack(inputs)
-

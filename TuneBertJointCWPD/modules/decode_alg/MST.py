@@ -52,7 +52,7 @@ def _mst(scores, eps=1e-10):
         heads[new_root] = 0
 
     edges = defaultdict(set)
-    vertices = set((0,))
+    vertices = {0}
     for dep, head in enumerate(heads[tokens]):
         vertices.add(dep + 1)
         edges[head].add(dep + 1)
@@ -79,7 +79,6 @@ def _mst(scores, eps=1e-10):
         heads[changed_cycle] = new_head
         edges[new_head].add(changed_cycle)
         edges[old_head].remove(changed_cycle)
-
     return heads
 
 
@@ -123,5 +122,4 @@ def _find_cycle(vertices, edges):
     for v in vertices:
         if v not in _indices:
             _strongconnect(v)
-
     return [SCC for SCC in _SCCs if len(SCC) > 1]

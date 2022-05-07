@@ -254,7 +254,3 @@ class TransformerXL(nn.Module):
             h_out = h_out.transpose(0, 1)
 
         return h_out, hids
-
-
-
-

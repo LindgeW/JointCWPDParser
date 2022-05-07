@@ -62,5 +62,3 @@ def pad_sequence(seqs: list, device=torch.device('cpu'), dtype=torch.int, paddin
     for i, seq in enumerate(seqs):
         pad_seqs[i, :len(seq)] = torch.tensor(seq, dtype=dtype, device=device)
     return pad_seqs
-
-

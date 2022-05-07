@@ -14,13 +14,11 @@ def get_data_path(json_path):
 
 def args_config():
     parse = ArgumentParser('Biaffine Parser Argument Configuration')
-
     parse.add_argument('--cuda', type=int, default=-1, help='training device, default on cpu')
-
-    parse.add_argument('-lr', '--learning_rate', type=float, default=0.00085, help='learning rate of training')
+    parse.add_argument('-lr', '--learning_rate', type=float, default=1e-3, help='learning rate of training')
     parse.add_argument('-bt1', '--beta1', type=float, default=0.9, help='beta1 of Adam optimizer')
-    parse.add_argument('-bt2', '--beta2', type=float, default=0.98, help='beta2 of Adam optimizer')
-    parse.add_argument('-eps', '--eps', type=float, default=1e-9, help='eps of Adam optimizer')
+    parse.add_argument('-bt2', '--beta2', type=float, default=0.99, help='beta2 of Adam optimizer')
+    parse.add_argument('-eps', '--eps', type=float, default=1e-8, help='eps of Adam optimizer')
     parse.add_argument('-warmup', '--warmup_step', type=int, default=10000, help='warm up steps for optimizer')
     parse.add_argument('--decay', type=float, default=0.75, help='lr decay rate for optimizer')
     parse.add_argument('--decay_step', type=int, default=10000, help='lr decay steps for optimizer')
@@ -28,14 +26,13 @@ def args_config():
     parse.add_argument('--scheduler', choices=['cosine', 'inv_sqrt', 'exponent', 'linear', 'const'], default='exponent', help='the type of lr scheduler')
     parse.add_argument('--grad_clip', type=float, default=1., help='the max norm of gradient clip')
 
-    parse.add_argument('--batch_size', type=int, default=25, help='train batch size')
+    parse.add_argument('--batch_size', type=int, default=32, help='train batch size')
     parse.add_argument('--update_steps', type=int, default=2, help='gradient accumulation and update per x steps')
-    parse.add_argument('--test_batch_size', type=int, default=100, help='test batch size')
+    parse.add_argument('--test_batch_size', type=int, default=64, help='test batch size')
     parse.add_argument('--epoch', type=int, default=100, help='iteration of training')
 
     parse.add_argument('--char_embed_dim', type=int, default=100, help='char embedding size')
     parse.add_argument('--tag_embed_dim', type=int, default=100, help='pos_tag embedding size')
-
     parse.add_argument('--lstm_depth', type=int, default=3, help='the depth of lstm layer')
     parse.add_argument('--arc_mlp_size', type=int, default=200, help='500 arc mlp size')
     parse.add_argument('--label_mlp_size', type=int, default=100, help='100 label mlp size')

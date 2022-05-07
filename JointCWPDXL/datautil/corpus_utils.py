@@ -2,7 +2,6 @@ from typing import List
 from pprint import pprint
 
 
-# ID FORM LEMMA CPOSTAG POSTAG FEATS HEAD DEPREL PHEAD PDEPREL
 class DepNode(object):
     def __init__(self, id,
                  form,
@@ -221,4 +220,3 @@ def process2(in_path, out_path):
                 print(d, end='  ')
             print(''.join(chs))
             print('\n\n')
-

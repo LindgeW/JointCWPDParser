@@ -64,7 +64,6 @@ def get_logger(name=None):
         logger.addHandler(file_handler)
 
     loggers[name] = logger
-
     return logger
 
 

@@ -23,16 +23,12 @@ def batch_iter(dataset: list, batch_size, shuffle=False):
 
     for i in range(nb_batch):
         batch_data = dataset[i*batch_size: (i+1)*batch_size]
-        if shuffle:
-            np.random.shuffle(batch_data)
         yield batch_data
 
 
 def batch_variable(batch_data, dep_vocab, device=torch.device('cpu')):
     batch_size = len(batch_data)
-
     max_seq_len = max(len(deps) for deps in batch_data)
-
     tag_idxs = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
     head_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
     rel_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)

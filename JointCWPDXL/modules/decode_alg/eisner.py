@@ -64,7 +64,7 @@ def greedy_decode(arc_matrix, mask=None):
 def eisner(scores, mask):  # mask = mask[:, 0]
     lens = mask.sum(1)  # 不包括<root>
     batch_size, seq_len, _ = scores.shape
-    scores = scores.permute(2, 1, 0)
+    scores = scores.permute(2, 1, 0).contiguous()
     s_i = torch.full_like(scores, float('-inf'))
     s_c = torch.full_like(scores, float('-inf'))
     p_i = scores.new_zeros(seq_len, seq_len, batch_size).long()
@@ -77,7 +77,7 @@ def eisner(scores, mask):  # mask = mask[:, 0]
         # ilr = C(i, r) + C(j, r+1)
         ilr = stripe(s_c, n, w) + stripe(s_c, n, w, (w, 1))
         # [batch_size, n, w]
-        ilr = ilr.permute(2, 0, 1)
+        ilr = ilr.permute(2, 0, 1).contiguous()
         il = ilr + scores.diagonal(-w).unsqueeze(-1)
         # I(j, i) = max(C(i, r) + C(j, r+1) + S(j, i)), i <= r < j
         il_span, il_path = il.max(-1)
@@ -102,8 +102,8 @@ def eisner(scores, mask):  # mask = mask[:, 0]
         p_c.diagonal(w).copy_(cr_path + starts + 1)
 
     predicts = []
-    p_c = p_c.permute(2, 0, 1).cpu()
-    p_i = p_i.permute(2, 0, 1).cpu()
+    p_c = p_c.permute(2, 0, 1).contiguous().cpu()
+    p_i = p_i.permute(2, 0, 1).contiguous().cpu()
     for i, length in enumerate(lens.tolist()):
         # length+1的原因是第一列全部置成了0
         heads = p_c.new_ones(length + 1, dtype=torch.long)

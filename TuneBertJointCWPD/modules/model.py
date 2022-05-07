@@ -10,13 +10,10 @@ from torch.nn.utils.rnn import pad_sequence
 class BaseModel(nn.Module):
     def __init__(self, args):
         super(BaseModel, self).__init__()
-
         self.args = args
-
         self.tag_embedding = nn.Parameter(torch.zeros(args.tag_size, args.tag_embed_dim))
         self.tag_mlp = nn.Linear(in_features=args.d_model, out_features=args.tag_size)
         # self.tag_crf = CRF(num_tags=args.tag_size, batch_first=True)
-
         in_features = args.d_model + args.tag_embed_dim
         self._activation = nn.ReLU()
         # self._activation = nn.LeakyReLU(0.1)
