@@ -1,4 +1,4 @@
-from datautil.dataloader import *
+import torch
 import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,90 +8,8 @@ from modules.decode_alg.eisner import eisner
 # from modules.decode_alg.MST import mst_decode
 from log.logger_ import logger
 from datautil.char_utils import *
-from .optimizer import *
-
-
-class Optimizer(object):
-    def __init__(self, params, args):
-        self.args = args
-        self.train_step = 0
-        # self.optimizer = optim.Adam(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps)
-        self.optimizer = AdamW(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps, weight_decay=args.weight_decay)
-
-        lr_scheduler = None
-        if args.scheduler == 'cosine':
-            lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=args.max_step, eta_min=1e-6)
-        elif args.scheduler == 'exponent':
-            def lr_lambda(step):
-                return args.decay ** (step / args.decay_step)
-
-            lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-        elif args.scheduler == 'inv_sqrt':
-            def lr_lambda(step):
-                if step == 0 and args.warmup_step == 0:
-                    return 1.
-                else:
-                    return 1. / (step ** 0.5) if step > args.warmup_step else step / (args.warmup_step ** 1.5)
-
-            lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-        elif args.scheduler == 'linear':
-            lr_scheduler = WarmupLinearSchedule(self.optimizer, warmup_steps=args.warmup_step, t_total=args.max_step)
-        else:
-            pass
-
-        self.lr_scheduler = lr_scheduler
-
-    def step(self):
-        self.optimizer.step()
-
-        if self.lr_scheduler is not None:
-            self.train_step += 1
-            if self.args.scheduler in ['cosine', 'exponent']:
-                if self.train_step < self.args.warmup_step:
-                    curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
-                    self.optimizer.param_groups[0]['lr'] = curr_lr
-                else:
-                    self.lr_scheduler.step(self.train_step)
-            else:
-                self.lr_scheduler.step(self.train_step)
-
-        self.optimizer.zero_grad()
-
-    def zero_grad(self):
-        self.optimizer.zero_grad()
-
-    def lr_schedule(self):
-        self.lr_scheduler.step()
-
-    def get_lr(self):
-        # current_lr = self.lr_scheduler.get_lr()[0]
-        current_lr = self.optimizer.param_groups[0]['lr']
-        return current_lr
-
-
-# class ScheduleOptimizer(object):
-#     def __init__(self, optimizer, d_model, warmup_steps):
-#         self.optimizer = optimizer
-#         self.warmup_steps = warmup_steps
-#         self.init_lr = d_model ** -0.5
-#         self.step_num = 0
-#
-#     def _adjust_lr(self):
-#         self.step_num += 1
-#         lr = self.init_lr * min(self.step_num ** -0.5, self.step_num * self.warmup_steps ** -1.5)
-#         for group in self.optimizer.param_groups:
-#             group['lr'] = lr
-#
-#     def step(self):
-#         self._adjust_lr()
-#         self.optimizer.step()
-#
-#     def zero_grad(self):
-#         self.optimizer.zero_grad()
-#
-#     def get_lr(self):
-#         current_lr = self.optimizer.param_groups[0]['lr']
-#         return current_lr
+from datautil.dataloader import *
+from .optimizer import AdamW, WarmupLinearSchedule
 
 
 class BiaffineParser(object):
@@ -106,30 +24,31 @@ class BiaffineParser(object):
     # 训练多次
     def train(self, train_data, dev_data, test_data, args, vocab):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size*args.update_steps))
-        # args.warmup_step = args.max_step // 2
+        # args.warmup_step = args.max_step // 10
         print('max step:', args.max_step)
-        optimizer = Optimizer(filter(lambda p: p.requires_grad, self.parser_model.model.parameters()), args)
         no_decay = ['bias', 'LayerNorm.weight']
-        optimizer_bert_parameters = [
+        optimizer_parameters = [
             {'params': [p for n, p in self.parser_model.bert.named_parameters()
                         if not any(nd in n for nd in no_decay) and p.requires_grad],
              'weight_decay': 0.01},
             {'params': [p for n, p in self.parser_model.bert.named_parameters()
                         if any(nd in n for nd in no_decay) and p.requires_grad],
-             'weight_decay': 0.0}
+             'weight_decay': 0.0},
+
+            {'params': [p for n, p in self.parser_model.model.named_parameters()
+                        if not any(nd in n for nd in no_decay)],
+            'weight_decay': args.weight_decay, 'lr': args.learning_rate},
+            {'params': [p for n, p in self.parser_model.model.named_parameters()
+                        if any(nd in n for nd in no_decay)],
+            'weight_decay': 0.0, 'lr': args.learning_rate}
         ]
-        optimizer_bert = AdamW(optimizer_bert_parameters, lr=5e-5, eps=1e-8)
-        scheduler_bert = WarmupLinearSchedule(optimizer_bert, warmup_steps=0, t_total=args.max_step)
-        all_params = [p for p in self.parser_model.model.parameters() if p.requires_grad]
-        for group in optimizer_bert_parameters:
-            for p in group['params']:
-                all_params.append(p)
+        optimizer = AdamW(optimizer_parameters, lr=args.learning_rate, eps=args.eps)
+        scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=args.max_step)
 
         test_best_uas, test_best_las = 0, 0
         test_best_tag_f1, test_best_seg_f1, test_best_udep_f1, test_best_ldep_f1 = 0, 0, 0, 0
         for ep in range(1, 1+args.epoch):
-            self.parser_model.model.train()
-            self.parser_model.bert.train()
+            self.parser_model.train()
             train_loss = 0
             all_arc_acc, all_rel_acc, all_arcs = 0, 0, 0
             start_time = time.time()
@@ -138,7 +57,6 @@ class BiaffineParser(object):
                 # batcher = (x.to(args.device) for x in batcher)
                 (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
                 tag_score, arc_score, rel_score = self.parser_model(bert_ids, bert_lens, bert_mask)
-
                 tag_loss = self.calc_tag_loss(tag_score, true_tags, bert_lens.gt(0))
                 dep_loss = self.calc_dep_loss(arc_score, rel_score, true_heads, true_rels, bert_lens.gt(0))
                 loss = tag_loss + dep_loss
@@ -156,16 +74,13 @@ class BiaffineParser(object):
                 REL = all_rel_acc * 100. / all_arcs
 
                 if (i + 1) % args.update_steps == 0 or (i == args.max_step - 1):
-                    nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, all_params), max_norm=args.grad_clip)
+                    nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=args.grad_clip)
                     optimizer.step()  # 利用梯度更新网络参数
-                    optimizer_bert.step()
-                    scheduler_bert.step()
-                    self.parser_model.model.zero_grad()  # 清空过往梯度
-                    self.parser_model.bert.zero_grad()  # 清空过往梯度
+                    scheduler.step()
+                    self.parser_model.zero_grad()  # 清空过往梯度
 
                 logger.info('Iter%d ARC: %.2f%%, REL: %.2f%%' % (i + 1, ARC, REL))
-                logger.info('time cost: %.2fs, lr: %f train loss: %.2f' % (
-                (time.time() - start_time), optimizer.get_lr(), loss_val))
+                logger.info('time cost: %.2fs, train loss: %.2f' % ((time.time() - start_time), loss_val))
 
             train_loss /= len(train_data)
             arc = all_arc_acc * 100. / all_arcs
@@ -199,9 +114,7 @@ class BiaffineParser(object):
         logger.info('Final test performance -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*test_best_tag_f1, 100.*test_best_seg_f1, 100.*test_best_udep_f1, 100.*test_best_ldep_f1))
 
     def evaluate(self, test_data, args, vocab):
-        self.parser_model.bert.eval()
-        self.parser_model.model.eval()
-
+        self.parser_model.eval()
         all_gold_seg, all_pred_seg, all_seg_correct = 0, 0, 0
         all_gold_tag, all_pred_tag, all_tag_correct = 0, 0, 0
         all_gold_arc, all_pred_arc, all_arc_correct, all_rel_correct = 0, 0, 0, 0

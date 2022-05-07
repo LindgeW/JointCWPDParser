@@ -1,6 +1,6 @@
-from transformers.modeling_bert import *
+import torch
+import torch.nn as nn
 from transformers import BertModel
-from .layer import NonlinearMLP
 
 
 class BertEmbedding(nn.Module):
@@ -35,7 +35,6 @@ class BertEmbedding(nn.Module):
             # 将bert_embed中mask对应1的位置替换成bert_out，0的位置不变
             bert_embed_ = bert_embed.masked_scatter_(mask.unsqueeze(dim=-1), bert_out)
             proj_hiddens.append(self.projs[i](bert_embed_))
-
         return proj_hiddens
 
         # 根据bert piece长度切分
@@ -46,7 +45,3 @@ class BertEmbedding(nn.Module):
         # # 将bert_embed中mask对应1的位置替换成bert_out，0的位置不变
         # bert_embed = bert_embed.masked_scatter_(mask.unsqueeze(dim=-1), bert_out)
         # return self.proj(bert_embed)
-
-
-
-

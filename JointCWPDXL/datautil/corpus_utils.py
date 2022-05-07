@@ -222,11 +222,3 @@ def process2(in_path, out_path):
             print(''.join(chs))
             print('\n\n')
 
-
-if __name__ == '__main__':
-    process2('../data/ctb70/test.ctb70-yiou.charconll_new.r',
-            '../data/ctb50/train.ctb50.charconll_new.txt')
-    # x = count('../data/ctb70/test.ctb70-yiou.charconll_new.r', char=True)
-    # y = count('../data/ctb70/test.ctb70.conll', char=False)
-    # z = count('../data/ctb70/test.ctb70-yiou.conll', char=False)
-    # print(x, y, z, x == y == z)

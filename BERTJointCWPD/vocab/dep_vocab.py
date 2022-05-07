@@ -92,7 +92,7 @@ class DepVocab(object):
 
         if self.bert_tokenizer is None and self.bert_vocab is not None:
             self.bert_tokenizer = BertTokenizer.from_pretrained(self.bert_vocab)
-            print("Load bert vocabulary finished !!!")
+            print("Load bert_util vocabulary finished !!!")
         return self
 
     @_check_build_bert_vocab

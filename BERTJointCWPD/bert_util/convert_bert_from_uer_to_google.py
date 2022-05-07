@@ -23,48 +23,48 @@ def main():
     session = tf.Session()
     output_model = collections.OrderedDict()
 
-    output_model["bert/embeddings/word_embeddings"] = input_model["embedding.word_embedding.weight"]
-    output_model["bert/embeddings/position_embeddings"] = input_model["embedding.position_embedding.weight"]
-    output_model["bert/embeddings/token_type_embeddings"] = input_model["embedding.segment_embedding.weight"][1:, :]
-    output_model["bert/embeddings/LayerNorm/gamma"] = input_model["embedding.layer_norm.gamma"]
-    output_model["bert/embeddings/LayerNorm/beta"] = input_model["embedding.layer_norm.beta"]
+    output_model["bert_util/embeddings/word_embeddings"] = input_model["embedding.word_embedding.weight"]
+    output_model["bert_util/embeddings/position_embeddings"] = input_model["embedding.position_embedding.weight"]
+    output_model["bert_util/embeddings/token_type_embeddings"] = input_model["embedding.segment_embedding.weight"][1:, :]
+    output_model["bert_util/embeddings/LayerNorm/gamma"] = input_model["embedding.layer_norm.gamma"]
+    output_model["bert_util/embeddings/LayerNorm/beta"] = input_model["embedding.layer_norm.beta"]
 
     for i in range(args.layers_num):
-        output_model["bert/encoder/layer_" + str(i) + "/attention/self/query/kernel"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/self/query/kernel"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.linear_layers.0.weight"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/self/query/bias"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/self/query/bias"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.linear_layers.0.bias"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/self/key/kernel"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/self/key/kernel"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.linear_layers.1.weight"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/self/key/bias"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/self/key/bias"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.linear_layers.1.bias"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/self/value/kernel"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/self/value/kernel"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.linear_layers.2.weight"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/self/value/bias"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/self/value/bias"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.linear_layers.2.bias"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/output/dense/kernel"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/output/dense/kernel"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.final_linear.weight"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/output/dense/bias"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/output/dense/bias"] = input_model[
             "encoder.transformer." + str(i) + ".self_attn.final_linear.bias"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/output/LayerNorm/gamma"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/output/LayerNorm/gamma"] = input_model[
             "encoder.transformer." + str(i) + ".layer_norm_1.gamma"]
-        output_model["bert/encoder/layer_" + str(i) + "/attention/output/LayerNorm/beta"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/attention/output/LayerNorm/beta"] = input_model[
             "encoder.transformer." + str(i) + ".layer_norm_1.beta"]
-        output_model["bert/encoder/layer_" + str(i) + "/intermediate/dense/kernel"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/intermediate/dense/kernel"] = input_model[
             "encoder.transformer." + str(i) + ".feed_forward.linear_1.weight"]
-        output_model["bert/encoder/layer_" + str(i) + "/intermediate/dense/bias"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/intermediate/dense/bias"] = input_model[
             "encoder.transformer." + str(i) + ".feed_forward.linear_1.bias"]
-        output_model["bert/encoder/layer_" + str(i) + "/output/dense/kernel"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/output/dense/kernel"] = input_model[
             "encoder.transformer." + str(i) + ".feed_forward.linear_2.weight"]
-        output_model["bert/encoder/layer_" + str(i) + "/output/dense/bias"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/output/dense/bias"] = input_model[
             "encoder.transformer." + str(i) + ".feed_forward.linear_2.bias"]
-        output_model["bert/encoder/layer_" + str(i) + "/output/LayerNorm/gamma"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/output/LayerNorm/gamma"] = input_model[
             "encoder.transformer." + str(i) + ".layer_norm_2.gamma"]
-        output_model["bert/encoder/layer_" + str(i) + "/output/LayerNorm/beta"] = input_model[
+        output_model["bert_util/encoder/layer_" + str(i) + "/output/LayerNorm/beta"] = input_model[
             "encoder.transformer." + str(i) + ".layer_norm_2.beta"]
 
-    output_model["bert/pooler/dense/kernel"] = input_model["target.nsp_linear_1.weight"]
-    output_model["bert/pooler/dense/bias"] = input_model["target.nsp_linear_1.bias"]
+    output_model["bert_util/pooler/dense/kernel"] = input_model["target.nsp_linear_1.weight"]
+    output_model["bert_util/pooler/dense/bias"] = input_model["target.nsp_linear_1.bias"]
     output_model["cls/seq_relationship/output_weights"] = input_model["target.nsp_linear_2.weight"]
     output_model["cls/seq_relationship/output_bias"] = input_model["target.nsp_linear_2.bias"]
     output_model["cls/predictions/transform/dense/kernel"] = input_model["target.mlm_linear_1.weight"]

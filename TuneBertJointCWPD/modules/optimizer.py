@@ -103,3 +103,58 @@ class AdamW(Optimizer):
                     p.data.add_(-group['lr'] * group['weight_decay'], p.data)
 
         return loss
+
+
+class MyOptimizer(object):
+    def __init__(self, params, args):
+        self.args = args
+        self.train_step = 0
+        self.optimizer = torch.optim.Adam(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps)
+
+        lr_scheduler = None
+        if args.scheduler == 'cosine':
+            lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=args.max_step, eta_min=1e-6)
+        elif args.scheduler == 'exponent':
+            def lr_lambda(step):
+                return args.decay ** (step / args.decay_step)
+
+            lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
+        elif args.scheduler == 'inv_sqrt':
+            def lr_lambda(step):
+                if step == 0 and args.warmup_step == 0:
+                    return 1.
+                else:
+                    return 1. / (step ** 0.5) if step > args.warmup_step else step / (args.warmup_step ** 1.5)
+
+            lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
+        elif args.scheduler == 'linear':
+            lr_scheduler = WarmupLinearSchedule(self.optimizer, warmup_steps=args.warmup_step, t_total=args.max_step)
+        else:
+            pass
+        self.lr_scheduler = lr_scheduler
+
+    def step(self):
+        self.optimizer.step()
+        if self.lr_scheduler is not None:
+            self.train_step += 1
+            if self.args.scheduler in ['cosine', 'exponent']:
+                if self.train_step < self.args.warmup_step:
+                    curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
+                    self.optimizer.param_groups[0]['lr'] = curr_lr
+                else:
+                    self.lr_scheduler.step(self.train_step)
+            else:
+                self.lr_scheduler.step(self.train_step)
+
+        self.optimizer.zero_grad()
+
+    def zero_grad(self):
+        self.optimizer.zero_grad()
+
+    def lr_schedule(self):
+        self.lr_scheduler.step()
+
+    def get_lr(self):
+        # current_lr = self.lr_scheduler.get_lr()[0]
+        current_lr = self.optimizer.param_groups[0]['lr']
+        return current_lr

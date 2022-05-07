@@ -5,7 +5,6 @@
     "test_data": "./data/ctb50/test.ctb50.charconll.r"
   },
   "pretrained": {
-    "bert_model": "./bert/base",
-    "bert_vocab": "./bert/base/vocab.txt"
+    "bert_model": "./bert/base"
   }
 }

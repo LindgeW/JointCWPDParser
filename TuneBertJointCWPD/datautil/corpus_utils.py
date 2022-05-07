@@ -104,8 +104,3 @@ def process(in_path, out_path):
     for deps in read_conll(in_path):
         transform_pos_tag(deps)
         save_conll(out_path, deps)
-
-
-if __name__ == '__main__':
-    process('../data/ctb70/test.ctb70-yiou.charconll_new.r',
-            '../data/ctb50/test.ctb50.charconll_new.txt')

@@ -17,7 +17,6 @@ if __name__ == '__main__':
     print('cuda available:', torch.cuda.is_available())
     print('cuDnn available:', torch.backends.cudnn.enabled)
     print('GPU numbers:', torch.cuda.device_count())
-
     data_path = get_data_path("./conf/datapath.json")
     char_vocab, bichar_vocab = create_vocab(data_path['data']['train_data'])
     char_embed_weights = char_vocab.get_embedding_weights(data_path['pretrained']['char_embedding'])
@@ -49,6 +48,5 @@ if __name__ == '__main__':
 
     biff_parser = JointDParser(parser_model)
     biff_parser.summary()
-
     biff_parser.train(train_data, dev_data, test_data, args, char_vocab, bichar_vocab)
 

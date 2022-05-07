@@ -20,9 +20,8 @@ if __name__ == '__main__':
     print('GPU numbers:', torch.cuda.device_count())
 
     data_path = get_data_path("./conf/datapath.json")
-
     dep_vocab = create_vocab(data_path['data']['train_data'],
-                             data_path['pretrained']['bert_vocab'])
+                             data_path['pretrained']['bert_model'])
 
     train_data = load_dataset(data_path['data']['train_data'], dep_vocab)
     print('train data size:', len(train_data))
@@ -40,7 +39,6 @@ if __name__ == '__main__':
     parser_model = ParserModel(base_model, bert_embed)
     if torch.cuda.is_available() and args.cuda >= 0:
         args.device = torch.device('cuda', args.cuda)
-        torch.cuda.empty_cache()
         # if torch.cuda.device_count() > 1:
         #     parser_model = nn.DataParallel(parser_model, device_ids=list(range(torch.cuda.device_count() // 2)))
     else:
@@ -52,6 +50,5 @@ if __name__ == '__main__':
     biff_parser = BiaffineParser(parser_model)
     biff_parser.summary()
     print('模型参数量：', sum(p.numel() for p in parser_model.parameters() if p.requires_grad))
-
     biff_parser.train(train_data, dev_data, test_data, args, dep_vocab)
 

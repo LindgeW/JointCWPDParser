@@ -173,11 +173,4 @@ class DotProductAttention(nn.Module):
         return att_out
 
 
-if __name__ == '__main__':
-    add_att = AdditiveAttention(10, 5)
-    x = torch.rand(3, 10)
-    y = torch.rand(3, 10)
-    print(add_att(x, y).shape)
-
-
 

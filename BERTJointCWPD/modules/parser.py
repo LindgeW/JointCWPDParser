@@ -1,5 +1,4 @@
-from datautil.dataloader import *
-import torch.optim as optim
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import time
@@ -8,90 +7,8 @@ from modules.decode_alg.eisner import eisner
 # from modules.decode_alg.MST import mst_decode
 from log.logger_ import logger
 from datautil.char_utils import *
-from .optimizer import *
-
-
-class Optimizer(object):
-    def __init__(self, params, args):
-        self.args = args
-        self.train_step = 0
-        # self.optimizer = optim.Adam(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps)
-        self.optimizer = AdamW(params, lr=args.learning_rate, betas=(args.beta1, args.beta2), eps=args.eps, weight_decay=args.weight_decay)
-
-        lr_scheduler = None
-        if args.scheduler == 'cosine':
-            lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=args.max_step, eta_min=1e-6)
-        elif args.scheduler == 'exponent':
-            def lr_lambda(step):
-                return args.decay ** (step / args.decay_step)
-
-            lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-        elif args.scheduler == 'inv_sqrt':
-            def lr_lambda(step):
-                if step == 0 and args.warmup_step == 0:
-                    return 1.
-                else:
-                    return 1. / (step ** 0.5) if step > args.warmup_step else step / (args.warmup_step ** 1.5)
-
-            lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-        elif args.scheduler == 'linear':
-            lr_scheduler = WarmupLinearSchedule(self.optimizer, warmup_steps=args.warmup_step, t_total=args.max_step)
-        else:
-            pass
-
-        self.lr_scheduler = lr_scheduler
-
-    def step(self):
-        self.optimizer.step()
-
-        if self.lr_scheduler is not None:
-            self.train_step += 1
-            if self.args.scheduler in ['cosine', 'exponent']:
-                if self.train_step < self.args.warmup_step:
-                    curr_lr = self.args.learning_rate * self.train_step / self.args.warmup_step
-                    self.optimizer.param_groups[0]['lr'] = curr_lr
-                else:
-                    self.lr_scheduler.step(self.train_step)
-            else:
-                self.lr_scheduler.step(self.train_step)
-
-        self.optimizer.zero_grad()
-
-    def zero_grad(self):
-        self.optimizer.zero_grad()
-
-    def lr_schedule(self):
-        self.lr_scheduler.step()
-
-    def get_lr(self):
-        # current_lr = self.lr_scheduler.get_lr()[0]
-        current_lr = self.optimizer.param_groups[0]['lr']
-        return current_lr
-
-
-# class ScheduleOptimizer(object):
-#     def __init__(self, optimizer, d_model, warmup_steps):
-#         self.optimizer = optimizer
-#         self.warmup_steps = warmup_steps
-#         self.init_lr = d_model ** -0.5
-#         self.step_num = 0
-#
-#     def _adjust_lr(self):
-#         self.step_num += 1
-#         lr = self.init_lr * min(self.step_num ** -0.5, self.step_num * self.warmup_steps ** -1.5)
-#         for group in self.optimizer.param_groups:
-#             group['lr'] = lr
-#
-#     def step(self):
-#         self._adjust_lr()
-#         self.optimizer.step()
-#
-#     def zero_grad(self):
-#         self.optimizer.zero_grad()
-#
-#     def get_lr(self):
-#         current_lr = self.optimizer.param_groups[0]['lr']
-#         return current_lr
+from datautil.dataloader import *
+from .optimizer import AdamW
 
 
 class BiaffineParser(object):
@@ -139,12 +56,11 @@ class BiaffineParser(object):
                 self.parser_model.zero_grad()  # 清空过往梯度
 
             logger.info('Iter%d ARC: %.2f%%, REL: %.2f%%' % (i + 1, ARC, REL))
-            logger.info('time cost: %.2fs, lr: %f train loss: %.2f' % ((time.time() - start_time), optimizer.get_lr(), loss_val))
+            logger.info('time cost: %.2fs, train loss: %.2f' % (time.time() - start_time, loss_val))
 
         train_loss /= len(train_data)
         ARC = all_arc_acc * 100. / all_arcs
         REL = all_rel_acc * 100. / all_arcs
-
         return train_loss, ARC, REL
 
     # 训练多次
@@ -152,15 +68,15 @@ class BiaffineParser(object):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size*args.update_steps))
         # args.warmup_step = args.max_step // 2
         print('max step:', args.max_step)
-        optimizer = Optimizer(filter(lambda p: p.requires_grad, self.parser_model.parameters()), args)
-
+        optimizer = AdamW(filter(lambda p: p.requires_grad, self.parser_model.parameters()), lr=args.learning_rate,
+                          betas=(args.beta1, args.beta2), eps=args.eps, weight_decay=args.weight_decay)
         best_udep = 0
         test_best_uas, test_best_las = 0, 0
         test_best_tag_f1, test_best_seg_f1, test_best_udep_f1, test_best_ldep_f1 = 0, 0, 0, 0
         for ep in range(1, 1+args.epoch):
             train_loss, arc, rel = self.train_iter(train_data, args, vocab, optimizer)
             dev_uas, dev_las, tag_f1, seg_f1, udep_f1, ldep_f1 = self.evaluate(dev_data, args, vocab)
-            logger.info('[Epoch %d] train loss: %.3f, lr: %f, ARC: %.2f%%, REL: %.2f%%' % (ep, train_loss, optimizer.get_lr(), arc, rel))
+            logger.info('[Epoch %d] train loss: %.3f, ARC: %.2f%%, REL: %.2f%%' % (ep, train_loss, arc, rel))
             logger.info('Dev data -- UAS: %.2f%%, LAS: %.2f%%, best_UDEP: %.2f%%' % (100.*dev_uas, 100.*dev_las, 100.*best_udep))
             logger.info('Dev data -- TAG: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*tag_f1, 100.*seg_f1, 100.*udep_f1, 100.*ldep_f1))
 

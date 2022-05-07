@@ -20,19 +20,14 @@ def batch_iter(dataset: list, batch_size, shuffle=False):
         np.random.shuffle(dataset)
 
     nb_batch = int(np.ceil(len(dataset) / batch_size))
-
     for i in range(nb_batch):
         batch_data = dataset[i*batch_size: (i+1)*batch_size]
-        if shuffle:
-            np.random.shuffle(batch_data)
         yield batch_data
 
 
 def batch_variable(batch_data, dep_vocab, device=torch.device('cpu')):
     batch_size = len(batch_data)
-
     max_seq_len = max(len(deps) for deps in batch_data)
-
     tag_idxs = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
     head_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
     rel_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
@@ -58,7 +53,6 @@ def batch_variable(batch_data, dep_vocab, device=torch.device('cpu')):
     bert_ids = pad_sequence(bert_ids, dtype=torch.long, device=device)
     bert_lens = pad_sequence(bert_lens, dtype=torch.int, device=device)
     bert_masks = pad_sequence(bert_masks, dtype=torch.uint8, device=device)
-
     return (bert_ids, bert_lens, bert_masks), tag_idxs, head_idx, rel_idx
 
 

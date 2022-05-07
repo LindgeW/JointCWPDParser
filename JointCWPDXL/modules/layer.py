@@ -432,7 +432,3 @@ class LocalDotProductAttention(nn.Module):
         return fusion_out
 
 
-if __name__ == '__main__':
-    x = torch.ones(15, 15)
-    mask = x.triu(-9) * x.tril(9)
-    print(mask)

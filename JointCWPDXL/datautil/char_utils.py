@@ -160,21 +160,4 @@ def idx_head_in_wd(ch_deps: List[Dependency]):
     return head_ch
 
 
-from pprint import pprint
-if __name__ == '__main__':
-    # tag_lst = 'NR#b xxx NR#b xxx NR#m NR#m NR#e NR#m NR#m NR#e DEG#b NR#m NN#b NN#e tooy NR#s DEG#s NN#s NR#b NR#e NR#b'.split(' ')
-    gold_tag_lst = 'NR#s PU#b PU#m PU#e NR#b NR#m NR#m NR#m NR#e NR#s DEG#s NR#b NR#m NR#e NR#e NR#s NR#s'.split(' ')
-    pred_tag_lst = 'NR#s PU#b PU#e PU#e NR#b NR#m NR#m NR#m NR#e NR#s DEG#s NR#b NR#m NR#e NR#s NR#s NR#s'.split(' ')
-
-    gold_deps = [Dependency(sid=i, form='OK', head=i, dep_rel='OK', tag=tag) for i, tag in enumerate(gold_tag_lst)]
-    pred_deps = [Dependency(sid=i, form='OK', head=i, dep_rel='OK', tag=tag) for i, tag in enumerate(pred_tag_lst)]
-
-    # wd_deps = cws_from_postag_bi(deps)
-    gold_wd_deps = cws_from_tag(gold_deps)
-    pred_wd_deps = cws_from_tag(pred_deps)
-    print(gold_wd_deps)
-    print(pred_wd_deps)
-    a,b,c = pos_tag_f1(gold_wd_deps, pred_wd_deps)
-    print(a, b, c)
-
 

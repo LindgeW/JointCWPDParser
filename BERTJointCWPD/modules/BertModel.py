@@ -1,4 +1,5 @@
-from transformers.modeling_bert import *
+import torch
+import torch.nn as nn
 from transformers import BertModel
 from .scale_mix import ScalarMix
 
@@ -37,7 +38,7 @@ class BertEmbedding(nn.Module):
 
         with torch.no_grad():
             _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
-            # _, _, all_enc_outs = self.bert(bert_ids)
+            # _, _, all_enc_outs = self.bert_util(bert_ids)
             top_enc_outs = all_enc_outs[-self.nb_layers:]
 
         if self.merge == 'linear':
@@ -54,8 +55,4 @@ class BertEmbedding(nn.Module):
         bert_embed = bert_out.new_zeros(bz, seq_len, self.hidden_size)
         # 将bert_embed中mask对应1的位置替换成bert_out，0的位置不变
         bert_embed = bert_embed.masked_scatter_(mask.unsqueeze(dim=-1), bert_out)
-
         return self.proj(bert_embed)
-
-
-
