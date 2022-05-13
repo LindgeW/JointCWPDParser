@@ -53,7 +53,7 @@ def batch_variable(batch_data, dep_vocab, device=torch.device('cpu')):
     # bert_ids, bert_lens, bert_mask = dep_vocab.bert_ids(bert_seqs)
     bert_ids = pad_sequence(bert_ids, dtype=torch.long, device=device)
     bert_lens = pad_sequence(bert_lens, dtype=torch.int, device=device)
-    bert_mask = pad_sequence(bert_masks, dtype=torch.uint8, device=device)
+    bert_mask = pad_sequence(bert_masks, dtype=torch.bool, device=device)
 
     return (bert_ids, bert_lens, bert_mask), tag_idxs, head_idx, rel_idx
 

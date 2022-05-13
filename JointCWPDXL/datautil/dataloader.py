@@ -52,7 +52,7 @@ def batch_variable(batch_data, char_vocab, bichar_vocab, device=torch.device('cp
     tag_idxs = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
     head_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
     rel_idx = torch.zeros((batch_size, max_seq_len), dtype=torch.long, device=device)
-    non_pad_mask = torch.zeros((batch_size, max_seq_len),dtype=torch.uint8, device=device)
+    non_pad_mask = torch.zeros((batch_size, max_seq_len),dtype=torch.bool, device=device)
 
     for i, deps in enumerate(batch_data):
         seq_len = len(deps)
