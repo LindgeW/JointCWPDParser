@@ -4,7 +4,7 @@ import numpy as np
 from conf.config import get_data_path, args_config
 from datautil.dataloader import load_dataset
 from vocab.dep_vocab import create_vocab
-from modules.model import *
+from modules.model import BaseModel, ParserModel
 from modules.parser import BiaffineParser
 from modules.BertModel import BertEmbedding
 

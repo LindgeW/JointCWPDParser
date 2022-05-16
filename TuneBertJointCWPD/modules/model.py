@@ -1,5 +1,6 @@
-from .layer import *
-from .dropout import *
+import torch.nn as nn
+from .layer import NonlinearMLP, Biaffine
+from .dropout import timestep_dropout
 import torch
 from .scale_mix import ScalarMix
 import torch.nn.functional as F

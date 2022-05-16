@@ -1,5 +1,4 @@
 from typing import List
-from pprint import pprint
 
 
 class DepNode(object):

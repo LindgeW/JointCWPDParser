@@ -1,3 +1,4 @@
+
 # 创建词表时不需要vocab，读取语料时需要vocab
 def read_deps(file_reader, vocab=None) -> list:
     min_count = 0

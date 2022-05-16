@@ -2,11 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import time
-from modules.decode_alg.eisner import eisner
-from modules.decode_alg.MST import mst_decode
-from log.logger_ import logger
-from datautil.char_utils import *
-from datautil.dataloader import *
+from ..modules.decode_alg.eisner import eisner
+# from ..modules.decode_alg.MST import mst_decode
+from ..log.logger_ import logger
+from ..datautil.char_utils import cws_from_tag, calc_seg_f1, pos_tag_f1, parser_metric, calc_f1
+from ..datautil.dependency import Dependency
+from ..datautil.dataloader import batch_iter, batch_variable
 from .optimizer import AdamW
 
 

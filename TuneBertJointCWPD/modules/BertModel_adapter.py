@@ -2,7 +2,7 @@ from transformers import BertModel
 import torch
 import math
 import torch.nn as nn
-from modules.scale_mix import ScalarMix
+from .scale_mix import ScalarMix
 
 
 class GELU(nn.Module):

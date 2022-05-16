@@ -1,4 +1,5 @@
-from .layer import *
+import torch.nn as nn
+from .layer import NonlinearMLP, Biaffine
 from .encoder.transformer_RPE import TransformerXL
 from .encoder.bilstm import BiLSTMEncoder
 from .CPUEmbedding import CPUEmbedding

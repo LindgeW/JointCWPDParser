@@ -1,6 +1,7 @@
-from .layer import *
+import torch.nn as nn
+from .layer import Biaffine, NonlinearMLP
 from .encoder.transformer_RPE import TransformerXL
-from .dropout import *
+from .dropout import timestep_dropout
 import torch
 from .scale_mix import ScalarMix
 import torch.nn.functional as F

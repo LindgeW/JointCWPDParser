@@ -1,5 +1,5 @@
 import os
-from datautil.dependency import read_deps
+from ..datautil.dependency import read_deps
 from collections import Counter
 from functools import wraps
 from transformers import BertTokenizer

@@ -1,5 +1,5 @@
 import os
-from datautil.dependency import read_deps
+from ..datautil.dependency import read_deps
 from collections import Counter
 import numpy as np
 from functools import wraps

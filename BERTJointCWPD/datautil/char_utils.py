@@ -1,4 +1,4 @@
-from datautil.dependency import Dependency
+from ..datautil.dependency import Dependency
 from typing import List
 
 

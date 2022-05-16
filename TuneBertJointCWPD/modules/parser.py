@@ -1,14 +1,13 @@
 import torch
-import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
 import time
 from .metrics import Metrics
-from modules.decode_alg.eisner import eisner
-# from modules.decode_alg.MST import mst_decode
-from log.logger_ import logger
-from datautil.char_utils import *
-from datautil.dataloader import batch_iter, batch_variable
+from ..modules.decode_alg.eisner import eisner
+from ..log.logger_ import logger
+from ..datautil.char_utils import cws_from_tag, calc_seg_f1, pos_tag_f1, parser_metric
+from ..datautil.dependency import Dependency
+from ..datautil.dataloader import batch_iter, batch_variable
 from .optimizer import AdamW, WarmupLinearSchedule
 
 
@@ -62,7 +61,7 @@ class BiaffineParser(object):
                     loss = loss / args.update_steps
                 loss_val = loss.data.item()
                 train_loss += loss_val
-                loss.backward()  # 反向传播，计算当前梯度
+                loss.backward()
 
                 arc_acc, rel_acc, nb_arcs = self.calc_acc(arc_score, rel_score, true_heads, true_rels, bert_lens.gt(0))
                 all_arc_acc += arc_acc
@@ -73,9 +72,9 @@ class BiaffineParser(object):
 
                 if (i + 1) % args.update_steps == 0 or (i == args.max_step - 1):
                     nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=args.grad_clip)
-                    optimizer.step()  # 利用梯度更新网络参数
+                    optimizer.step()
                     scheduler.step()
-                    self.parser_model.zero_grad()  # 清空过往梯度
+                    self.parser_model.zero_grad()
 
                 logger.info('Iter%d ARC: %.2f%%, REL: %.2f%%' % (i + 1, ARC, REL))
                 logger.info('time cost: %.2fs, train loss: %.2f' % ((time.time() - start_time), loss_val))
