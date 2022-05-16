@@ -34,7 +34,7 @@ class BertEmbedding(nn.Module):
         mask = bert_lens.gt(0)
 
         with torch.no_grad():
-            _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
+            _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask, return_dict=False)
             # _, _, all_enc_outs = self.bert_util(bert_ids)
             top_enc_outs = all_enc_outs[-self.nb_layers:]
 

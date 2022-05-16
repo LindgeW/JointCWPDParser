@@ -76,7 +76,7 @@ def save_conll(path, deps):
 
 # 将混合标签的词性bi转成bmes形式
 # NR#b NR#i NR#i -> NR#b NR#m NR#e
-def transform_pos_tag(deps: List[DepNode]):
+def transform_tag(deps: List[DepNode]):
     is_start = False
     one_wd = []
     end_idx = len(deps)-1
@@ -101,5 +101,5 @@ def transform_pos_tag(deps: List[DepNode]):
 
 def process(in_path, out_path):
     for deps in read_conll(in_path):
-        transform_pos_tag(deps)
+        transform_tag(deps)
         save_conll(out_path, deps)

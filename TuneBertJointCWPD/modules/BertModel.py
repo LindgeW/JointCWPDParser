@@ -23,7 +23,7 @@ class BertEmbedding(nn.Module):
         bz, seq_len = bert_lens.shape
         mask = bert_lens.gt(0)
 
-        _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask)
+        _, _, all_enc_outs = self.bert(bert_ids, attention_mask=bert_mask, return_dict=False)
         bert_outs = all_enc_outs[-self.nb_layers:]
 
         proj_hiddens = []

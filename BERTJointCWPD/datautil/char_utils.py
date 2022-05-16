@@ -2,7 +2,6 @@ from datautil.dependency import Dependency
 from typing import List
 
 
-# 计算F1值
 def calc_f1(num_gold, num_pred, num_correct, eps=1e-10):
     f1 = (2. * num_correct) / (num_pred + num_gold + eps)
     return f1

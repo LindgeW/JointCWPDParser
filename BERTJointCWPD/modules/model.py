@@ -100,7 +100,6 @@ class ParserModel(nn.Module):
             lbl_head = timestep_dropout(lbl_head, self.args.label_mlp_drop)
             lbl_dep = timestep_dropout(lbl_dep, self.args.label_mlp_drop)
         lbl_score = self.label_biaffine(lbl_dep, lbl_head)
-
         return tag_score, arc_score, lbl_score
 
     def tag_loss(self, tag_score, gold_tags, char_mask=None):

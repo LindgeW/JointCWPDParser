@@ -8,33 +8,6 @@ def calc_f1(num_gold, num_pred, num_correct, eps=1e-10):
     return f1
 
 
-# # 利用词性标签获取分词的边界bi（不考虑词性标签）
-# # NR#b  NR#i  DEG#b VV#b  NN#b  NN#i  NN#i
-# def cws_from_postag_bi(deps: List[Dependency]):
-#     wds = []
-#     one_wd = []
-#     is_start = False
-#     end_idx = len(deps) - 1
-#     for i, dep in enumerate(deps):
-#         if '#' not in dep.tag:
-#             is_start = False
-#             continue
-#         tag_bound = dep.tag.split('#')[1]
-#         one_wd.append(dep)
-#         if tag_bound == 'b':
-#             is_start = True
-#             if i == end_idx or '#' not in deps[i+1].tag or deps[i+1].tag.split('#')[1] != 'i':
-#                 wds.append(one_wd)
-#                 one_wd = []
-#                 is_start = False
-#         elif tag_bound == 'i' and (i == end_idx or '#' not in deps[i+1].tag or deps[i+1].tag.split('#')[1] != 'i'):
-#             if is_start:
-#                 wds.append(one_wd)
-#                 is_start = False
-#             one_wd = []
-#     return wds
-
-
 def cws_from_tag(deps: List[Dependency]):
     wds = []
     one_wd = []
