@@ -1,6 +1,10 @@
 
 This repository contains the code for [Deep Graph-Based Character-Level Chinese Dependency Parsing](https://ieeexplore.ieee.org/document/9381612)
 
+### Requirements
++ Python >= 3.7
++ torch >= 1.0
++ transformers >= 4.0
 
 
 If you found the resources in this repo helpful, please cite the following paper:
