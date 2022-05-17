@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import random
 from conf.config import get_data_path, args_config
 from datautil.dataloader import load_dataset
 from vocab.dep_vocab import create_vocab
@@ -8,12 +9,18 @@ from modules.parser import BiaffineParser
 from modules.BertModel import BertEmbedding
 
 
-if __name__ == '__main__':
-    np.random.seed(3046)
-    torch.manual_seed(1234)
-    torch.cuda.manual_seed(1344)
-    torch.cuda.manual_seed_all(1344)
+def set_seeds(seed=1349):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
 
+
+if __name__ == '__main__':
+    set_seeds(3347)
     print('cuda available:', torch.cuda.is_available())
     print('cuDnn available:', torch.backends.cudnn.enabled)
     print('GPU numbers:', torch.cuda.device_count())

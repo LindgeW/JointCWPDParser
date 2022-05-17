@@ -1,14 +1,16 @@
+import time
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import time
-from .metrics import Metrics
-from ..modules.decode_alg.eisner import eisner
-from ..log.logger_ import logger
-from ..datautil.char_utils import cws_from_tag, calc_seg_f1, pos_tag_f1, parser_metric
-from ..datautil.dependency import Dependency
+from transformers import get_linear_schedule_with_warmup
+# from .optimizer import WarmupLinearSchedule
+from ..datautil.char_utils import calc_prf, cws_from_tag, calc_seg_f1, pos_tag_f1, parser_metric
 from ..datautil.dataloader import batch_iter, batch_variable
-from .optimizer import AdamW, WarmupLinearSchedule
+from ..datautil.dependency import Dependency
+from ..log.logger_ import logger
+from ..modules.decode_alg.eisner import eisner
+
 
 
 class BiaffineParser(object):
@@ -25,26 +27,27 @@ class BiaffineParser(object):
         optimizer_parameters = [
             {'params': [p for n, p in self.parser_model.bert.named_parameters()
                         if not any(nd in n for nd in no_decay) and p.requires_grad],
-             'weight_decay': 0.01},
+             'weight_decay': 0.01, 'lr': args.bert_lr},
             {'params': [p for n, p in self.parser_model.bert.named_parameters()
                         if any(nd in n for nd in no_decay) and p.requires_grad],
-             'weight_decay': 0.0},
+             'weight_decay': 0.0, 'lr': args.bert_lr},
             {'params': [p for n, p in self.parser_model.model.named_parameters()
                         if not any(nd in n for nd in no_decay)],
-            'weight_decay': args.weight_decay, 'lr': args.learning_rate},
+             'weight_decay': args.weight_decay, 'lr': args.base_lr},
             {'params': [p for n, p in self.parser_model.model.named_parameters()
                         if any(nd in n for nd in no_decay)],
-            'weight_decay': 0.0, 'lr': args.learning_rate}
+             'weight_decay': 0.0, 'lr': args.base_lr}
         ]
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size * args.update_steps))
         # args.warmup_step = args.max_step // 10
         print('max step:', args.max_step)
-        optimizer = AdamW(optimizer_parameters, lr=args.learning_rate, eps=args.eps)
-        scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=args.max_step)
+        optimizer = torch.optim.AdamW(optimizer_parameters, lr=args.bert_lr, eps=args.eps)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=args.max_step)
+        # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=args.max_step)
 
         test_best_uas, test_best_las = 0, 0
         test_best_tag_f1, test_best_seg_f1, test_best_udep_f1, test_best_ldep_f1 = 0, 0, 0, 0
-        for ep in range(1, 1+args.epoch):
+        for ep in range(1, 1 + args.epoch):
             self.parser_model.train()
             train_loss = 0
             all_arc_acc, all_rel_acc, all_arcs = 0, 0, 0
@@ -71,7 +74,8 @@ class BiaffineParser(object):
                 REL = all_rel_acc * 100. / all_arcs
 
                 if (i + 1) % args.update_steps == 0 or (i == args.max_step - 1):
-                    nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=args.grad_clip)
+                    nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()),
+                                             max_norm=args.grad_clip)
                     optimizer.step()
                     scheduler.step()
                     self.parser_model.zero_grad()
@@ -85,12 +89,12 @@ class BiaffineParser(object):
 
             dev_uas, dev_las, tag_f1, seg_f1, udep_f1, ldep_f1 = self.evaluate(dev_data, args, vocab)
             logger.info('[Epoch %d] train loss: %.3f, ARC: %.2f%%, REL: %.2f%%' % (ep, train_loss, arc, rel))
-            logger.info('Dev data -- UAS: %.2f%%, LAS: %.2f%%' % (100.*dev_uas, 100.*dev_las))
-            logger.info('Dev data -- TAG: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*tag_f1, 100.*seg_f1, 100.*udep_f1, 100.*ldep_f1))
+            logger.info('Dev data -- UAS: %.2f%%, LAS: %.2f%%' % (100. * dev_uas, 100. * dev_las))
+            logger.info('Dev data -- TAG: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (
+            100. * tag_f1, 100. * seg_f1, 100. * udep_f1, 100. * ldep_f1))
 
-            # with open(os.path.join(args.work_dir, 'model.pt'), 'wb') as f:
-            #     torch.save(self.parser_model, f)
-            test_uas, test_las, test_tag_f1, test_seg_f1, test_udep_f1, test_ldep_f1 = self.evaluate(test_data, args, vocab)
+            test_uas, test_las, test_tag_f1, test_seg_f1, test_udep_f1, test_ldep_f1 = self.evaluate(test_data, args,
+                                                                                                     vocab)
             if test_best_uas < test_uas:
                 test_best_uas = test_uas
             if test_best_las < test_las:
@@ -103,28 +107,29 @@ class BiaffineParser(object):
                 test_best_udep_f1 = test_udep_f1
             if test_best_ldep_f1 < test_ldep_f1:
                 test_best_ldep_f1 = test_ldep_f1
-            logger.info('Test data -- UAS: %.2f%%, LAS: %.2f%%' % (100.*test_uas, 100.*test_las))
-            logger.info('Test data -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*test_tag_f1, 100.*test_seg_f1, 100.*test_udep_f1, 100.*test_ldep_f1))
+            logger.info('Test data -- UAS: %.2f%%, LAS: %.2f%%' % (100. * test_uas, 100. * test_las))
+            logger.info('Test data -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (
+            100. * test_tag_f1, 100. * test_seg_f1, 100. * test_udep_f1, 100. * test_ldep_f1))
 
-        logger.info('Final test performance -- UAS: %.2f%%, LAS: %.2f%%' % (100.*test_best_uas, 100.*test_best_las))
-        logger.info('Final test performance -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (100.*test_best_tag_f1, 100.*test_best_seg_f1, 100.*test_best_udep_f1, 100.*test_best_ldep_f1))
+        logger.info('Final test performance -- UAS: %.2f%%, LAS: %.2f%%' % (100. * test_best_uas, 100. * test_best_las))
+        logger.info('Final test performance -- Tag F1: %.2f%%, Seg F1: %.2f%%, UDEP F1: %.2f%%, LDEP F1: %.2f%%' % (
+        100. * test_best_tag_f1, 100. * test_best_seg_f1, 100. * test_best_udep_f1, 100. * test_best_ldep_f1))
 
     def evaluate(self, test_data, args, vocab):
         self.parser_model.eval()
         all_gold_seg, all_pred_seg, all_seg_correct = 0, 0, 0
         all_gold_tag, all_pred_tag, all_tag_correct = 0, 0, 0
         all_gold_arc, all_pred_arc, all_arc_correct, all_rel_correct = 0, 0, 0, 0
-
         with torch.no_grad():
             for batch_data in batch_iter(test_data, args.test_batch_size):
                 batcher = batch_variable(batch_data, vocab, args.device)
                 # batcher = (x.to(args.device) for x in batcher)
                 (bert_ids, bert_lens, bert_mask), true_tags, true_heads, true_rels = batcher
                 tag_score, arc_score, rel_score = self.parser_model(bert_ids, bert_lens, bert_mask)
-
                 pred_tags = tag_score.data.argmax(dim=-1)
                 pred_heads, pred_rels = self.decode(arc_score, rel_score, bert_lens.gt(0))
-                for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, vocab)):
+                for i, sent_dep_tree in enumerate(
+                        self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, vocab)):
                     gold_seg_lst = cws_from_tag(batch_data[i])
                     pred_seg_lst = cws_from_tag(sent_dep_tree)
 
@@ -138,20 +143,21 @@ class BiaffineParser(object):
                     all_pred_tag += num_pred_tag
                     all_tag_correct += num_tag_correct
 
-                    num_gold_arc, num_pred_arc, num_arc_correct, num_rel_correct = parser_metric(gold_seg_lst, pred_seg_lst)
+                    num_gold_arc, num_pred_arc, num_arc_correct, num_rel_correct = parser_metric(gold_seg_lst,
+                                                                                                 pred_seg_lst)
                     all_arc_correct += num_arc_correct
                     all_rel_correct += num_rel_correct
                     all_gold_arc += num_gold_arc
                     all_pred_arc += num_pred_arc
 
-        seg_f1 = Metrics(all_gold_seg, all_pred_seg, all_seg_correct).F1
-        tag_f1 = Metrics(all_gold_tag, all_pred_tag, all_tag_correct).F1
-        udep_metric = Metrics(all_gold_arc, all_pred_arc, all_arc_correct)
-        udep_f1 = udep_metric.F1
-        uas = udep_metric.recall
-        ldep_metric = Metrics(all_gold_arc, all_pred_arc, all_rel_correct)
-        ldep_f1 = ldep_metric.F1
-        las = ldep_metric.recall
+        seg_f1 = calc_prf(all_gold_seg, all_pred_seg, all_seg_correct)[2]
+        tag_f1 = calc_prf(all_gold_tag, all_pred_tag, all_tag_correct)[2]
+        udep_metric = calc_prf(all_gold_arc, all_pred_arc, all_arc_correct)
+        ldep_metric = calc_prf(all_gold_arc, all_pred_arc, all_rel_correct)
+        udep_f1 = udep_metric[2]
+        uas = udep_metric[1]
+        ldep_f1 = ldep_metric[2]
+        las = ldep_metric[1]
         return uas, las, tag_f1, seg_f1, udep_f1, ldep_f1
 
     def dep_tree_iter(self, batch_gold_trees, pred_tags, pred_heads, pred_rels, vocab):
@@ -165,7 +171,9 @@ class BiaffineParser(object):
         for sent_tree, tags, heads, rels in zip(batch_gold_trees, pred_tags, pred_heads, pred_rels):
             sent_dep_tree = []
             for idx in range(len(sent_tree)):
-                sent_dep_tree.append(Dependency(sent_tree[idx].id, sent_tree[idx].form, vocab.index2tag(tags[idx]), heads[idx], vocab.index2rel(rels[idx])))
+                sent_dep_tree.append(
+                    Dependency(sent_tree[idx].id, sent_tree[idx].form, vocab.index2tag(tags[idx]), heads[idx],
+                               vocab.index2rel(rels[idx])))
             yield sent_dep_tree
 
     def decode(self, pred_arc_score, pred_rel_score, mask):

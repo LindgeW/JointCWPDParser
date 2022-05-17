@@ -1,4 +1,16 @@
 
+# CONLL标注格式包含10列，分别为：
+# ID   FORM    LEMMA   CPOSTAG POSTAG  FEATS   HEAD    DEPREL  PHEAD   PDEPREL
+# 只用到前８列，其含义分别为：
+# 1    ID      当前词在句子中的序号，从1开始
+# 2    FORM    当前字词或标点
+# 3    LEMMA   当前词（或标点）的原型或词干，在中文中，此列与FORM相同
+# 4    CPOSTAG 当前词的词性（粗粒度） coarse-grained
+# 5    POSTAG  当前词的词性（细粒度）
+# 6    FEATS   句法特征，在本次评测中，此列未被使用，全部以下划线代替。
+# 7    HEAD    当前词的中心词 (语法父词索引，ROOT为0)
+# 8    DEPREL  当前词与中心词的依存关系
+
 # 创建词表时不需要vocab，读取语料时需要vocab
 def read_deps(file_reader, vocab=None) -> list:
     min_count = 0

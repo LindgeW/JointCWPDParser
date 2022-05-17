@@ -13,9 +13,7 @@ def get_data_path(json_path):
 
 def args_config():
     parse = ArgumentParser('Biaffine Parser Argument Configuration')
-
     parse.add_argument('--cuda', type=int, default=-1, help='training device, default on cpu')
-
     parse.add_argument('-lr', '--learning_rate', type=float, default=8e-4, help='learning rate of training')
     parse.add_argument('-bt1', '--beta1', type=float, default=0.9, help='beta1 of Adam optimizer')
     parse.add_argument('-bt2', '--beta2', type=float, default=0.99, help='beta2 of Adam optimizer')

@@ -2,9 +2,11 @@ from ..datautil.dependency import Dependency
 from typing import List
 
 
-def calc_f1(num_gold, num_pred, num_correct, eps=1e-10):
+def calc_prf(num_gold, num_pred, num_correct, eps=1e-10):
+    p = num_correct / (num_pred + eps)
+    r = num_correct / (num_gold + eps)
     f1 = (2. * num_correct) / (num_pred + num_gold + eps)
-    return f1
+    return p, r, f1
 
 
 def cws_from_tag_bi(deps: List[Dependency]):

@@ -72,8 +72,8 @@ class BaseModel(nn.Module):
 
         return tag_score, arc_score, lbl_score
 
-    def tag_loss(self, tag_score, gold_tags, char_mask=None):
-        lld = self.tag_crf(tag_score, tags=gold_tags, mask=char_mask, reduction='token_mean')
+    def tag_loss(self, tag_score, gold_tags, char_mask=None, reduction='mean'):
+        lld = self.tag_crf(tag_score, tags=gold_tags, mask=char_mask, reduction=reduction)
         return lld.neg()
 
     def tag_decode(self, tag_emissions, char_mask):

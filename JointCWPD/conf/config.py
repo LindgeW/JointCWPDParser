@@ -22,8 +22,8 @@ def args_config():
     parse.add_argument('-warmup', '--warmup_step', type=int, default=10000, help='warm up steps for optimizer')
     parse.add_argument('--decay', type=float, default=0.75, help='lr decay rate for optimizer')
     parse.add_argument('--decay_step', type=int, default=10000, help='lr decay steps for optimizer')
-    parse.add_argument('--weight_decay', type=float, default=1e-5, help='weight decay for optimizer')
-    parse.add_argument('--scheduler', choices=['cosine', 'inv_sqrt', 'exponent', 'linear', 'const'], default='exponent', help='the type of lr scheduler')
+    parse.add_argument('--weight_decay', type=float, default=1e-4, help='weight decay for optimizer')
+    parse.add_argument('--scheduler', choices=['cosine', 'inv_sqrt', 'exponent', 'linear', 'const'], default='linear', help='the type of lr scheduler')
     parse.add_argument('--grad_clip', type=float, default=1., help='the max norm of gradient clip')
 
     parse.add_argument('--batch_size', type=int, default=32, help='train batch size')
@@ -47,8 +47,8 @@ def args_config():
     parse.add_argument("--hidden_size", type=int, default=400, help='the output size of encoder layer')
     parse.add_argument('--embed_drop', type=float, default=0.2, help='embedding dropout')
     parse.add_argument('--att_drop', type=float, default=0.1, help='attention dropout')
-    parse.add_argument('--arc_mlp_drop', type=float, default=0.15, help='Arc MLP dropout')
-    parse.add_argument('--label_mlp_drop', type=float, default=0.15, help='Label MLP dropout')
+    parse.add_argument('--arc_mlp_drop', type=float, default=0.33, help='Arc MLP dropout')
+    parse.add_argument('--label_mlp_drop', type=float, default=0.33, help='Label MLP dropout')
     # parse.add_argument('--is_train', action='store_true', help='默认为False, 当执行`python train.py --is_train`时，is_train变成True')
 
     args = parse.parse_args()

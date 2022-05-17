@@ -14,10 +14,9 @@ def get_data_path(json_path):
 
 def args_config():
     parse = ArgumentParser('Biaffine Parser Argument Configuration')
-
     parse.add_argument('--cuda', type=int, default=-1, help='training device, default on cpu')
-
-    parse.add_argument('-lr', '--learning_rate', type=float, default=1e-3, help='learning rate of training')
+    parse.add_argument('-lr', '--base_lr', type=float, default=1e-3, help='learning rate of training')
+    parse.add_argument('--bert_lr', type=float, default=5e-5, help='learning rate of bert')
     parse.add_argument('-bt1', '--beta1', type=float, default=0.9, help='beta1 of Adam optimizer')
     parse.add_argument('-bt2', '--beta2', type=float, default=0.99, help='beta2 of Adam optimizer')
     parse.add_argument('-eps', '--eps', type=float, default=1e-8, help='eps of Adam optimizer')
@@ -26,10 +25,10 @@ def args_config():
     parse.add_argument('--scheduler', choices=['cosine', 'inv_sqrt', 'exponent', 'linear', 'const'], default='linear', help='the type of lr scheduler')
     parse.add_argument('--grad_clip', type=float, default=1., help='the max norm of gradient clip')
 
-    parse.add_argument('--batch_size', type=int, default=2, help='train batch size')
+    parse.add_argument('--batch_size', type=int, default=16, help='train batch size')
     parse.add_argument('--test_batch_size', type=int, default=64, help='test batch size')
-    parse.add_argument('--epoch', type=int, default=10, help='iteration of training')
-    parse.add_argument('--update_steps', type=int, default=8, help='gradient accumulation and update per x steps')
+    parse.add_argument('--epoch', type=int, default=5, help='iteration of training')
+    parse.add_argument('--update_steps', type=int, default=2, help='gradient accumulation and update per x steps')
 
     parse.add_argument('--char_embed_dim', type=int, default=100, help='char embedding size')
     parse.add_argument('--tag_embed_dim', type=int, default=50, help='pos_tag embedding size')
@@ -47,11 +46,9 @@ def args_config():
     parse.add_argument('--embed_drop', type=float, default=0.2, help='embedding dropout')
     parse.add_argument('--enc_drop', type=float, default=0.2, help='encoder dropout')
     parse.add_argument('--att_drop', type=float, default=0.1, help='attention dropout')
-    parse.add_argument('--arc_mlp_drop', type=float, default=0.2, help='Arc MLP dropout')
-    parse.add_argument('--label_mlp_drop', type=float, default=0.2, help='Label MLP dropout')
+    parse.add_argument('--arc_mlp_drop', type=float, default=0.25, help='Arc MLP dropout')
+    parse.add_argument('--label_mlp_drop', type=float, default=0.25, help='Label MLP dropout')
 
     args = parse.parse_args()
-
     print(vars(args))
-
     return args

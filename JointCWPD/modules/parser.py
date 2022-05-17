@@ -5,10 +5,9 @@ import time
 from ..modules.decode_alg.eisner import eisner
 # from ..modules.decode_alg.MST import mst_decode
 from ..log.logger_ import logger
-from ..datautil.char_utils import cws_from_tag, calc_seg_f1, pos_tag_f1, parser_metric, calc_f1
+from ..datautil.char_utils import cws_from_tag, calc_seg_f1, pos_tag_f1, parser_metric, calc_prf
 from ..datautil.dependency import Dependency
 from ..datautil.dataloader import batch_iter, batch_variable
-from .optimizer import AdamW
 
 
 class JointDParser(object):
@@ -47,11 +46,10 @@ class JointDParser(object):
             ARC = all_arc_acc * 100. / all_arcs
             REL = all_rel_acc * 100. / all_arcs
 
-            # 多次循环，梯度累积，相对于变相增大batch_size，节省存储
             if (i+1) % args.update_steps == 0 or (i == args.max_step-1):
                 nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.parser_model.parameters()), max_norm=args.grad_clip)
-                optimizer.step()  # 利用梯度更新网络参数
-                self.parser_model.zero_grad()  # 清空过往梯度
+                optimizer.step()
+                self.parser_model.zero_grad()
 
             logger.info('Iter%d ARC: %.2f%%, REL: %.2f%%' % (i + 1, ARC, REL))
             logger.info('time cost: %.2fs, train loss: %.2f' % (time.time() - start_time, loss_val))
@@ -63,9 +61,9 @@ class JointDParser(object):
 
     def train(self, train_data, dev_data, test_data, args, *vocab):
         args.max_step = args.epoch * ((len(train_data) + args.batch_size - 1) // (args.batch_size * args.update_steps))
-        args.warmup_step = args.max_step // 2
+        args.warmup_step = args.max_step // 10
         print('max step:', args.max_step)
-        optimizer = AdamW(filter(lambda p: p.requires_grad, self.parser_model.parameters()), lr=args.learning_rate,
+        optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.parser_model.parameters()), lr=args.learning_rate,
                           betas=(args.beta1, args.beta2), eps=args.eps, weight_decay=args.weight_decay)
         best_udep_f1 = 0
         test_best_uas, test_best_las = 0, 0
@@ -113,14 +111,12 @@ class JointDParser(object):
                 batcher = batch_variable(batch_data, *vocab, args.device)
                 # batcher = (x.to(args.device) for x in batcher)
                 ngram_idxs, extngram_idxs, true_tags, true_heads, true_rels, non_pad_mask = batcher
-
                 tag_score, arc_score, rel_score = self.parser_model(ngram_idxs, extngram_idxs, non_pad_mask)
                 pred_tags = self.parser_model.tag_decode(tag_score, non_pad_mask)
                 # pred_tags = tag_score.data.argmax(dim=-1)
                 pred_heads, pred_rels = self.decode(arc_score, rel_score, non_pad_mask)
                 for i, sent_dep_tree in enumerate(self.dep_tree_iter(batch_data, pred_tags, pred_heads, pred_rels, char_vocab)):
                     gold_seg_lst, pred_seg_lst = cws_from_tag(batch_data[i]), cws_from_tag(sent_dep_tree)
-
                     num_gold_seg, num_pred_seg, num_seg_correct = calc_seg_f1(gold_seg_lst, pred_seg_lst)
                     all_gold_seg += num_gold_seg
                     all_pred_seg += num_pred_seg
@@ -137,10 +133,10 @@ class JointDParser(object):
                     all_gold_arc += num_gold_arc
                     all_pred_arc += num_pred_arc
 
-        seg_f1 = 100. * calc_f1(all_gold_seg, all_pred_seg, all_seg_correct)
-        udep_f1 = 100. * calc_f1(all_gold_arc, all_pred_arc, all_arc_correct)
-        ldep_f1 = 100. * calc_f1(all_gold_arc, all_pred_arc, all_rel_correct)
-        tag_f1 = 100. * calc_f1(all_gold_tag, all_pred_tag, all_tag_correct)
+        seg_f1 = 100. * calc_prf(all_gold_seg, all_pred_seg, all_seg_correct)[2]
+        udep_f1 = 100. * calc_prf(all_gold_arc, all_pred_arc, all_arc_correct)[2]
+        ldep_f1 = 100. * calc_prf(all_gold_arc, all_pred_arc, all_rel_correct)[2]
+        tag_f1 = 100. * calc_prf(all_gold_tag, all_pred_tag, all_tag_correct)[2]
         uas = all_arc_correct * 100. / all_gold_arc
         las = all_rel_correct * 100. / all_gold_arc
         return uas, las, tag_f1, seg_f1, udep_f1, ldep_f1
